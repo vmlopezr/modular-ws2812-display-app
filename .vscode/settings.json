@@ -1,0 +1,53 @@
+{   "editor.fontFamily": "Roboto Mono",
+  "[Python]":{
+      "editor.tabSize": 4
+  },
+  "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": false,
+      "editor.tabSize": 2
+    },
+    "[javascriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": false,
+      "editor.tabSize": 2
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": false,
+      "editor.tabSize": 2
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": false,
+      "editor.tabSize": 2
+    },
+    "eslint.autoFixOnSave": true,
+    "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      {
+        "autoFix": true,
+        "language": "typescript"
+      },
+      {
+        "autoFix": true,
+        "language": "typescriptreact"
+      }
+    ],
+    "prettier-eslint.eslintIntegration": true,
+    "editor.minimap.maxColumn": 80,
+    "terminal.integrated.fontFamily": "Roboto Mono",
+    "terminal.integrated.fontWeight": "800",
+    "editor.fontWeight": "800",
+    "window.zoomLevel": -1,
+    "C_Cpp.updateChannel": "Insiders",
+    "eslint.packageManager": "yarn",
+    "editor.rulers": [
+      80
+    ],
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    }
+
+}
