@@ -23,7 +23,6 @@ export default class SharedData {
     this.height = height;
   }
   connectToServer(): void {
-    this.socketInstance = new WebSocket('ws://172.25.17.227/');
-    // this.socketInstance = new WebSocket('ws://192.168.1.71/');
+    this.socketInstance = new WebSocket('ws://192.168.1.71/');
   }
 }

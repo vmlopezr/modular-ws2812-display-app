@@ -58,7 +58,6 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
     }
   };
   render() {
-    // console.log('rendering Settings');
     return (
       <View style={styles.page}>
         <NavigationEvents onWillBlur={this.onExit} />

@@ -9,23 +9,20 @@ interface CommsState {
   ESPConn: boolean;
 }
 interface CommsActions {
-  commsUpdate: (ESPComm: boolean) => void;
+  reconnectESP: () => void;
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const CommsContext = createContext<CommsCtx>(null);
 export const CommsConsumer = CommsContext.Consumer;
 
-class CommsContextProvider extends React.Component<{}, CommsState> {
+class CommsContextProvider extends React.PureComponent<{}, CommsState> {
   sharedData: SharedData;
   state = {
     ESPConn: false
   };
-  shouldComponentUpdate(nextState) {
-    console.log('should comms context update?');
-    if (nextState.ESPConn !== this.state.ESPConn) {
-      return true;
-    }
-    return false;
+  constructor(props) {
+    super(props);
+    this.sharedData = SharedData.getInstance();
   }
   subscribeSocketConnection = () => {
     if (!this.state.ESPConn) {
@@ -38,17 +35,19 @@ class CommsContextProvider extends React.Component<{}, CommsState> {
         console.log('connection opened');
         this.setState({ ESPConn: true });
       });
+      this.sharedData.socketInstance.addEventListener('error', event => {
+        console.log('error occurred with the websocket connection.');
+        console.log(event);
+      });
     }
   };
-  commsUpdate = (ESPConn: boolean) => this.setState({ ESPConn: ESPConn });
   render() {
-    // console.log('rendering Comms context');
     return (
       <CommsContext.Provider
         value={{
           state: this.state,
           actions: {
-            commsUpdate: this.commsUpdate
+            reconnectESP: this.subscribeSocketConnection
           }
         }}
       >

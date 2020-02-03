@@ -1,12 +1,11 @@
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 interface Props {
   col: number;
   row: number;
   color(): string;
   onNodeUpdate(row: number, col: number, color: string);
-  // label: number;
 }
 interface State {
   backgroundcolor: string;
@@ -74,9 +73,7 @@ class LedNode extends React.Component<Props, State> {
             alignItems: 'center'
           }
         ]}
-      >
-        {/* <Text>{this.props.label}</Text> */}
-      </View>
+      ></View>
     );
   }
 }

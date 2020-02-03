@@ -45,7 +45,6 @@ class MessageScreen extends React.Component<Props, State> {
     this.props.navigation.openDrawer();
   };
   render() {
-    // console.log('Rendering Message Page');
     return (
       <View style={styles.page}>
         <StatusBar barStyle="light-content" />

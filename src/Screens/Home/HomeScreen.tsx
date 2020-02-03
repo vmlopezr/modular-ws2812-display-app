@@ -13,6 +13,7 @@ import {
   NavigationScreenProp,
   NavigationState
 } from 'react-navigation';
+import CommContextUpdater from '../../components/CommContextUpdater';
 interface Props {
   isFocused: boolean;
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
@@ -27,11 +28,15 @@ class HomeScreen extends React.Component<Props, State> {
   height: number;
   sharedData: SharedData;
   filename: string;
+  updaterRef: any;
+  data: string;
   constructor(props) {
     super(props);
     this.sharedData = SharedData.getInstance();
     this.width = this.sharedData.width;
     this.height = this.sharedData.height;
+    this.updaterRef = React.createRef();
+    this.data = ' ';
   }
 
   handleFilenameChange(filename: string): void {
@@ -44,14 +49,18 @@ class HomeScreen extends React.Component<Props, State> {
       this.printData
     );
   };
-  readData = event => {
-    if (event.data == 'EX1T') {
+  readData = (event: { data: string }) => {
+    if (event.data === 'EX1T') {
       this.sharedData.socketInstance.removeEventListener(
         'message',
         this.readData
       );
+      console.log('finished reading');
     } else {
       console.log(event.data);
+      console.log(typeof event.data);
+      this.data = event.data;
+      console.log(this.data);
     }
   };
   onDirs() {
@@ -60,8 +69,8 @@ class HomeScreen extends React.Component<Props, State> {
   }
   onRead() {
     this.sharedData.socketInstance.addEventListener('message', this.readData);
-    this.sharedData.socketInstance.send('read/hello.txt');
-    // this.sharedData.socketInstance.send(path);
+    const path = 'read/' + this.filename;
+    this.sharedData.socketInstance.send(path);
   }
   onDels() {
     this.sharedData.socketInstance.addEventListener('message', this.printData);
@@ -74,7 +83,9 @@ class HomeScreen extends React.Component<Props, State> {
     );
   }
   connect() {
-    this.sharedData.connectToServer();
+    // this.sharedData.connectToServer();
+    this.updaterRef.current.restartConnection();
+    // this.context.
   }
   closeWebSocket() {
     this.sharedData.socketInstance.close();
@@ -85,11 +96,14 @@ class HomeScreen extends React.Component<Props, State> {
   onPress = () => {
     this.props.navigation.openDrawer();
   };
+  PrintData() {
+    console.log(this.data);
+  }
   render() {
-    // console.log('Rendering Home Page');
     return (
       <View style={styles.page}>
         <StatusBar barStyle="light-content" />
+        <CommContextUpdater ref={this.updaterRef} />
         <View style={styles.body}>
           <TouchableOpacity
             style={styles.button}
@@ -143,7 +157,11 @@ class HomeScreen extends React.Component<Props, State> {
               Close Connection
             </Text>
           </TouchableOpacity>
-
+          <TouchableOpacity style={styles.button} onPress={this.PrintData}>
+            <Text style={{ color: 'white', textAlign: 'center' }}>
+              Print Data
+            </Text>
+          </TouchableOpacity>
           <TextInput
             style={{ height: 40, borderColor: 'black' }}
             placeholder="Enter File to Read:"

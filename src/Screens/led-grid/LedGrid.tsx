@@ -8,8 +8,6 @@ import {
   PanResponder,
   StatusBar,
   Platform
-  // TouchableOpacity,
-  // Text
 } from 'react-native';
 import {
   NavigationParams,
@@ -21,7 +19,6 @@ import LedNode from '../../components/LedNode';
 import ColorPicker from '../../components/ColorPicker';
 import * as Haptics from 'expo-haptics';
 import styles from './LedGrid.style.';
-import { SettingsContext } from '../../contexts/SettingsContext';
 import Loader from '../../components/Loader';
 import { SettingsState } from '../../contexts/SettingsContext';
 import SharedData from '../../sharedData';
@@ -309,8 +306,6 @@ class LedGrid extends React.PureComponent<Props, State> {
   }
   render() {
     const width = this.width * 25;
-    console.log('render grid');
-
     let ID = '';
     return (
       <View style={styles.page} collapsable={false}>
