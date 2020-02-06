@@ -9,7 +9,7 @@ export default StyleSheet.create({
     fontWeight: 'bold'
   },
   navSectionStyle: {
-    backgroundColor: 'lightgrey'
+    backgroundColor: '#e4e2e2'
   },
   sectionHeadingStyle: {
     paddingVertical: 10,

@@ -1,6 +1,10 @@
 /* eslint-disable react/display-name */
 import { createBottomTabNavigator } from 'react-navigation-tabs';
-import { createDrawerNavigator } from 'react-navigation-drawer';
+import {
+  createDrawerNavigator,
+  DrawerItems,
+  DrawerContentComponentProps
+} from 'react-navigation-drawer';
 import { createStackNavigator } from 'react-navigation-stack';
 import React from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -9,6 +13,7 @@ import Settings from './Screens/Settings/Settings';
 import MessageScreen from './Screens/live-input/MessageScreen';
 import LedGrid from './Screens/led-grid/LedGrid';
 import { createAppContainer } from 'react-navigation';
+import { Dimensions } from 'react-native';
 import ConnectionBadge from './components/connectionBadge';
 import SideMenu from './Screens/SideMenu';
 
@@ -79,10 +84,15 @@ const DrawerNavigator = createDrawerNavigator(
   },
 
   {
-    contentComponent: props => <SideMenu {...props} />,
+    // contentComponent: ({ navigation }) => <SideMenu navigation={navigation} />,
+    contentComponent: (
+      props: React.PropsWithChildren<DrawerContentComponentProps>
+    ) => <SideMenu {...props} />,
+    drawerWidth: Dimensions.get('window').width - 130,
     navigationOptions: ({ navigation }) => {
       const routeName = getRouteName(navigation);
       return {
+        gestureEnabled: false,
         headerTitle: routeName,
         headerTitleStyle: {
           fontWeight: 'bold'
@@ -94,7 +104,7 @@ const DrawerNavigator = createDrawerNavigator(
         headerLeft: () => (
           <Ionicons
             name="md-menu"
-            onPress={() => navigation.openDrawer()}
+            onPress={() => navigation.toggleDrawer()}
             size={25}
             style={{ paddingLeft: 10 }}
             color={'#fff'}
@@ -110,8 +120,20 @@ const DrawerNavigator = createDrawerNavigator(
   }
 );
 
-const MainNavigator = createStackNavigator({
-  App: DrawerNavigator
-});
+const MainNavigator = createStackNavigator(
+  {
+    App: {
+      screen: DrawerNavigator,
+      navigationOptions: {
+        gestureEnabled: false
+      }
+    }
+  },
+  {
+    navigationOptions: {
+      gestureEnabled: false
+    }
+  }
+);
 
 export default createAppContainer(MainNavigator);

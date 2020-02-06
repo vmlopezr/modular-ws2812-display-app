@@ -1,59 +1,48 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import styles from './SideMenuHeading.style';
-import {
-  NavigationScreenProp,
-  NavigationState,
-  NavigationParams,
-  NavigationActions
-} from 'react-navigation';
+import { NavigationScreenProp, NavigationParams } from 'react-navigation';
+import { NavigationDrawerState } from 'react-navigation-drawer';
 interface Props {
   navigation: Navigation;
   route: string;
+  activeRoute: string;
+  navigateTo(route: string): void;
 }
-interface State {
-  activated: boolean;
-}
-type Navigation = NavigationScreenProp<NavigationState, NavigationParams>;
 
-class SideMenuHeading extends React.Component<Props, State> {
-  fontColor: string;
-  navigateToScreen = route => () => {
-    this.updateColor();
-    this.setState({ activated: true });
-    const navigateAction = NavigationActions.navigate({
-      routeName: route
-    });
-    this.props.navigation.dispatch(navigateAction);
-  };
+type Navigation = NavigationScreenProp<NavigationDrawerState, NavigationParams>;
+
+class SideMenuHeading extends React.PureComponent<Props> {
+  activeScreen: string;
   constructor(props) {
     super(props);
-    this.fontColor = 'gray';
-    this.state = {
-      activated: false
-    };
+    this.activeScreen = this.props.activeRoute;
   }
-  shouldComponentUpdate(nextState) {
-    if (nextState.activated !== this.state.activated) {
-      return true;
-    }
-    return false;
-  }
-  updateColor() {
-    if (this.state.activated) {
-      this.fontColor = 'blue';
+  // shouldComponentUpdate(nextProp) {
+  //   if (this.activeScreen !==) {
+  //     return true;
+  //   }
+  //   return false;
+  // }
+  fontColor(): string {
+    if (this.props.activeRoute === this.props.route) {
+      return '#29c7ac';
     } else {
-      this.fontColor = 'gray';
+      return 'gray';
     }
   }
+  navigate = () => {
+    this.activeScreen = this.props.route;
+    this.props.navigateTo(this.props.route);
+  };
   render() {
-    console.log(this.props.route);
+    console.log('updating heading: ' + this.props.route);
     return (
       <View>
         <View style={styles.navSectionStyle}>
           <Text
-            style={[styles.navItemStyle, { color: this.fontColor }]}
-            onPress={this.navigateToScreen(this.props.route)}
+            style={[styles.navItemStyle, { color: this.fontColor() }]}
+            onPress={this.navigate}
           >
             {this.props.route}
           </Text>
