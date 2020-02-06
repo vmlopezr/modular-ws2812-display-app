@@ -10,6 +10,7 @@ import MessageScreen from './Screens/live-input/MessageScreen';
 import LedGrid from './Screens/led-grid/LedGrid';
 import { createAppContainer } from 'react-navigation';
 import ConnectionBadge from './components/connectionBadge';
+import SideMenu from './Screens/SideMenu';
 
 import {
   NavigationParams,
@@ -78,6 +79,7 @@ const DrawerNavigator = createDrawerNavigator(
   },
 
   {
+    contentComponent: props => <SideMenu {...props} />,
     navigationOptions: ({ navigation }) => {
       const routeName = getRouteName(navigation);
       return {

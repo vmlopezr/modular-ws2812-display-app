@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StatusBar } from 'react-native';
+import { View, Text, StatusBar, TouchableOpacity } from 'react-native';
 import ConnectionBadge from '../../components/connectionBadge';
 import styles from './MessageScreen.style.';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -10,37 +10,29 @@ import {
 } from 'react-navigation';
 interface Props {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
-  screenProps: {
-    ESPConn: boolean;
-  };
 }
 interface State {
   isFocused: boolean;
+  count: number;
 }
 
-class MessageScreen extends React.Component<Props, State> {
+class MessageScreen extends React.PureComponent<Props, State> {
   connectionRef: any;
   constructor(props) {
     super(props);
     this.connectionRef = React.createRef();
     this.state = {
-      isFocused: false
+      isFocused: false,
+      count: 0
     };
   }
   onMenuTouch() {
     alert('Pressed the Menu Button');
   }
-  shouldComponentUpdate(nextProps, nextState) {
-    if (this.props.screenProps.ESPConn !== nextProps.screenProps.ESPConn) {
-      this.connectionRef.current.updateState(nextProps.screenProps.ESPConn);
-    }
-
-    if (this.state.isFocused !== nextState.isFocused) {
-      return true;
-    } else {
-      return false;
-    }
-  }
+  updateCount = (): void => {
+    const newcount = this.state.count + 1;
+    this.setState({ count: newcount });
+  };
   onPress = () => {
     this.props.navigation.openDrawer();
   };
@@ -48,7 +40,16 @@ class MessageScreen extends React.Component<Props, State> {
     return (
       <View style={styles.page}>
         <StatusBar barStyle="light-content" />
-        <View style={styles.body}></View>
+        <View style={styles.body}>
+          <View>
+            <Text>{this.state.count}</Text>
+          </View>
+          <TouchableOpacity style={styles.button} onPress={this.updateCount}>
+            <Text style={{ color: 'white', textAlign: 'center' }}>
+              Update Count
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
