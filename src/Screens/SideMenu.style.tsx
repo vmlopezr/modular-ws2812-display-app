@@ -17,5 +17,9 @@ export default StyleSheet.create({
   footerContainer: {
     padding: 20,
     backgroundColor: 'lightgrey'
+  },
+  divider: {
+    borderTopWidth: 1,
+    borderColor: '#d3d3d3'
   }
 });

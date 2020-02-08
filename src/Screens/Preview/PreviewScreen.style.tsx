@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: '#d3d3d3'
+    backgroundColor: '#08386D'
   },
   title: {
     fontSize: 20,

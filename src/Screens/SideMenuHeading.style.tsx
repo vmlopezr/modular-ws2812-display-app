@@ -4,14 +4,16 @@ export default StyleSheet.create({
     paddingTop: 20,
     flex: 1
   },
+
   navItemStyle: {
+    fontSize: 14,
     padding: 10,
     fontWeight: 'bold'
   },
-  navSectionStyle: {
-    backgroundColor: '#e4e2e2'
-  },
   sectionHeadingStyle: {
+    flexGrow: 1,
+    alignItems: 'center',
+    flexDirection: 'row',
     paddingVertical: 10,
     paddingHorizontal: 5
   },

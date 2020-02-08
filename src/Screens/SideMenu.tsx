@@ -10,6 +10,7 @@ import { NavigationDrawerState } from 'react-navigation-drawer';
 import SideMenuHeading from './SideMenuHeading';
 import styles from './SideMenu.style';
 import { ThemedColor } from 'react-navigation-tabs/lib/typescript/src/types';
+//https://expo.github.io/vector-icons/
 interface Props {
   navigation: Navigation;
   items: NavigationRoute[];
@@ -18,10 +19,16 @@ interface Props {
   activeBackgroundColor?: string | ThemedColor;
   inactiveTintColor?: string | ThemedColor;
   inactiveBackgroundColor?: string | ThemedColor;
+  defaultScreen: string;
 }
 type Navigation = NavigationScreenProp<NavigationDrawerState, NavigationParams>;
 
-class SideMenu extends React.Component<Props> {
+class SideMenu extends React.PureComponent<Props> {
+  activeRoute: string;
+  constructor(props) {
+    super(props);
+    this.activeRoute = this.props.defaultScreen;
+  }
   navigateToScreen = route => {
     if (route !== this.getActiveRoute()) {
       const navigateAction = NavigationActions.navigate({
@@ -32,46 +39,70 @@ class SideMenu extends React.Component<Props> {
       this.props.navigation.closeDrawer();
     }
   };
-  shouldComponentUpdate() {
-    return true;
-  }
   getActiveRoute(): string {
-    if (this.props.activeItemKey === 'Settings') {
-      return 'Settings';
-    } else {
+    if (this.props.activeItemKey === 'Dashboard') {
       const index = this.props.items[1].index;
       return this.props.items[1].routes[index].routeName;
+    } else {
+      return this.props.activeItemKey;
     }
   }
   render() {
     const activeRoute = this.getActiveRoute();
     return (
-      <View style={styles.container}>
+      <View style={styles.container} collapsable={false}>
         <ScrollView>
+          <View style={styles.divider}></View>
           <SideMenuHeading
             navigation={this.props.navigation}
-            route="Settings"
-            activeRoute={activeRoute}
-            navigateTo={this.navigateToScreen}
-          />
-          <SideMenuHeading
-            navigation={this.props.navigation}
+            label="Home"
             route="Home"
             activeRoute={activeRoute}
             navigateTo={this.navigateToScreen}
+            icon="ios-home"
           />
           <SideMenuHeading
             navigation={this.props.navigation}
-            route="LedGrid"
+            label="Draw on Matrix"
+            route="Draw"
             activeRoute={activeRoute}
             navigateTo={this.navigateToScreen}
+            icon="ios-create"
           />
           <SideMenuHeading
             navigation={this.props.navigation}
-            route="Message"
+            label="Type"
+            route="Type"
             activeRoute={activeRoute}
             navigateTo={this.navigateToScreen}
+            icon="md-laptop"
           />
+          <View style={styles.divider}></View>
+          <SideMenuHeading
+            navigation={this.props.navigation}
+            label="Set Effects"
+            route="Effects"
+            activeRoute={activeRoute}
+            navigateTo={this.navigateToScreen}
+            icon="ios-color-wand"
+          />
+          <SideMenuHeading
+            navigation={this.props.navigation}
+            label="Preview Screens"
+            route="Preview"
+            activeRoute={activeRoute}
+            navigateTo={this.navigateToScreen}
+            icon="ios-desktop"
+          />
+          <SideMenuHeading
+            navigation={this.props.navigation}
+            label="Settings"
+            route="Settings"
+            activeRoute={activeRoute}
+            navigateTo={this.navigateToScreen}
+            icon="ios-settings"
+          />
+          <View style={styles.divider}></View>
         </ScrollView>
       </View>
     );

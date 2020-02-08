@@ -45,6 +45,7 @@ class LedGrid extends React.PureComponent<Props, State> {
   NodeColor: string;
   _scrollRefOuter: any;
   _scrollRefInner: any;
+  _scrollParentRef: any;
   _scroll: boolean;
   longPressTimeout: NodeJS.Timeout;
   shortDelay: number;
@@ -70,7 +71,6 @@ class LedGrid extends React.PureComponent<Props, State> {
     };
     this.loading = false;
     this._move = false;
-    this._scroll = true;
     this.firstPosition = '';
     this.NodeColor = 'white';
     this.shortDelay = Platform.OS === 'ios' ? 15 : 25;
@@ -79,10 +79,10 @@ class LedGrid extends React.PureComponent<Props, State> {
     this.height = this.sharedData.height;
     this.NodeGrid = this.createNodeGrid(this.sharedData);
     this.NodeRef = this.createRefGrid(this.sharedData);
+    this._scrollParentRef = React.createRef();
     this._scrollRefInner = React.createRef();
     this._scrollRefOuter = React.createRef();
     this.connectionRef = React.createRef();
-
     this._panResponder = PanResponder.create({
       onMoveShouldSetPanResponder: () => true,
 
@@ -141,9 +141,7 @@ class LedGrid extends React.PureComponent<Props, State> {
           this.longPressTimeout = setTimeout(() => {
             this._move = true;
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-            this._scroll = false;
-            this.setInnerScroll();
-            this.setOuterScroll();
+            this.setScrolls(false);
           }, 300);
         }, this.shortDelay);
       },
@@ -153,27 +151,20 @@ class LedGrid extends React.PureComponent<Props, State> {
         clearTimeout(this.shortPressTimeout);
         clearTimeout(this.longPressTimeout);
         this._move = false;
-        this._scroll = true;
-        this.setInnerScroll();
-        this.setOuterScroll();
+        this.setScrolls(true);
       },
       onPanResponderTerminate: () => {
         clearTimeout(this.shortPressTimeout);
         clearTimeout(this.longPressTimeout);
         this._move = false;
-        this._scroll = true;
-        this.setInnerScroll();
-        this.setOuterScroll();
+        this.setScrolls(true);
       }
     });
   }
-  setOuterScroll() {
-    const { current: list } = this._scrollRefOuter;
-    list.setNativeProps({ scrollEnabled: this._scroll });
-  }
-  setInnerScroll() {
-    const { current: list } = this._scrollRefInner;
-    list.setNativeProps({ scrollEnabled: this._scroll });
+  setScrolls(scroll: boolean) {
+    this._scrollParentRef.current.setNativeProps({ scrollEnabled: scroll });
+    this._scrollRefInner.current.setNativeProps({ scrollEnabled: scroll });
+    this._scrollRefOuter.current.setNativeProps({ scrollEnabled: scroll });
   }
   onNodeUpdate = (row: number, col: number, color: string) => {
     this.NodeGrid[row][col] = color;
@@ -273,6 +264,7 @@ class LedGrid extends React.PureComponent<Props, State> {
 
   onEnter = () => {
     // Function call to tell the ESP32 to change State in StateMachine
+    console.log('rendering ledgrid');
     if (
       this.width !== this.sharedData.width ||
       this.height !== this.sharedData.height
@@ -281,7 +273,7 @@ class LedGrid extends React.PureComponent<Props, State> {
       this.setState({ loading: this.loading });
       setTimeout(() => {
         this.startUpdateProcess();
-      }, 5);
+      }, 10);
     }
   };
   async UpdatePage() {
@@ -300,15 +292,11 @@ class LedGrid extends React.PureComponent<Props, State> {
     this.setState({ loading: false });
   }
 
-  testRender() {
-    const state = !this.state.loading;
-    this.setState({ loading: state });
-  }
   render() {
     const width = this.width * 25;
     let ID = '';
     return (
-      <View style={styles.page} collapsable={false}>
+      <ScrollView ref={this._scrollParentRef}>
         <Loader loading={this.loading} />
         <StatusBar barStyle="light-content" />
         <NavigationEvents onDidFocus={this.onEnter} />
@@ -360,7 +348,7 @@ class LedGrid extends React.PureComponent<Props, State> {
                   }}
                 >
                   {this.NodeGrid.map((row, rowID) => {
-                    return row.map((col, colID) => {
+                    return row.map((col: any, colID: number) => {
                       ID = rowID.toString() + ',' + colID.toString();
                       return (
                         <LedNode
@@ -393,7 +381,7 @@ class LedGrid extends React.PureComponent<Props, State> {
             />
           </View>
         </View>
-      </View>
+      </ScrollView>
     );
   }
 }

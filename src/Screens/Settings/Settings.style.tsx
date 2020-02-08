@@ -1,8 +1,7 @@
 import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   page: {
-    flex: 1,
-    backgroundColor: '#08386D'
+    flex: 1
   },
   text: {
     color: '#000000',

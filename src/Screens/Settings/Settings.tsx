@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StatusBar, TextInput } from 'react-native';
-import { SettingsContext } from '../../contexts/SettingsContext';
 import SharedData from '../../sharedData';
 import {
   NavigationParams,
@@ -9,6 +8,8 @@ import {
   NavigationEvents
 } from 'react-navigation';
 import styles from './Settings.style';
+import NumberInput from '../../components/NumberInput';
+import { ScrollView } from 'react-native-gesture-handler';
 interface Prop {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
 }
@@ -17,6 +18,7 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
   WebSocket: SharedData;
   width: number;
   height: number;
+  Width: string;
   constructor(props) {
     super(props);
     this.WebSocket = SharedData.getInstance();
@@ -30,24 +32,13 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
   onPress = () => {
     this.props.navigation.openDrawer();
   };
-  isNormalInteger(text) {
-    const n = Math.floor(Number(text));
-    return n !== Infinity && String(n) === text && n >= 0;
-  }
-  handlewidthChange(text: string): void {
-    if (this.isNormalInteger(text)) {
-      this.width = parseInt(text);
-    } else {
-      alert('This field only accepts positive numbers.');
-    }
-  }
-  handleheightChange(text: string): void {
-    if (this.isNormalInteger(text)) {
-      this.height = parseInt(text);
-    } else {
-      alert('This field only accepts positive numbers.');
-    }
-  }
+
+  handleWidthChange = (text: string): void => {
+    this.width = parseInt(text);
+  };
+  handleHeightChange = (text: string): void => {
+    this.height = parseInt(text);
+  };
   onExit = () => {
     if (
       this.width !== this.WebSocket.width ||
@@ -59,31 +50,20 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
   };
   render() {
     return (
-      <View style={styles.page}>
+      <ScrollView style={styles.page}>
         <NavigationEvents onWillBlur={this.onExit} />
         <StatusBar barStyle="light-content" />
         <View style={styles.body}>
-          <Text>Billboard Width:</Text>
-          <TextInput
-            style={{ height: 40, borderColor: 'black' }}
-            placeholder="Enter Billboard width..."
-            blurOnSubmit={true}
-            returnKeyType="done"
-            onEndEditing={({ nativeEvent }) =>
-              this.handlewidthChange(nativeEvent.text)
-            }
+          <NumberInput
+            label={'Billboard Width:'}
+            updateValue={this.handleWidthChange}
           />
-          <Text>Billboard Height:</Text>
-          <TextInput
-            style={{ height: 40, borderColor: 'black' }}
-            placeholder="Enter Billboard height..."
-            returnKeyType="done"
-            onEndEditing={({ nativeEvent }) =>
-              this.handleheightChange(nativeEvent.text)
-            }
+          <NumberInput
+            label={'Billboard Height:'}
+            updateValue={this.handleHeightChange}
           />
         </View>
-      </View>
+      </ScrollView>
     );
   }
 }

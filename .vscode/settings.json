@@ -1,4 +1,8 @@
 {   "editor.fontFamily": "Roboto Mono",
+  "workbench.colorCustomizations": {
+    "editor.selectionBackground": "#2a71ac",
+    "editor.selectionHighlightBackground": "#4db7e0",
+  },
   "[Python]":{
       "editor.tabSize": 4
   },

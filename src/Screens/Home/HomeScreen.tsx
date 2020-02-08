@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  StatusBar,
-  TouchableOpacity
-} from 'react-native';
+import { View, TextInput, StatusBar } from 'react-native';
 import styles from './HomeScreen.style.';
 import SharedData from '../../sharedData';
 import {
@@ -13,6 +7,7 @@ import {
   NavigationScreenProp,
   NavigationState
 } from 'react-navigation';
+import { Button } from '../../components/Button';
 import CommContextUpdater from '../../components/CommContextUpdater';
 interface Props {
   isFocused: boolean;
@@ -67,21 +62,21 @@ class HomeScreen extends React.Component<Props, State> {
     this.sharedData.socketInstance.addEventListener('message', this.printData);
     this.sharedData.socketInstance.send('dirs');
   }
-  onRead() {
+  onRead = () => {
     this.sharedData.socketInstance.addEventListener('message', this.readData);
     const path = 'read/' + this.filename;
     this.sharedData.socketInstance.send(path);
-  }
-  onDels() {
+  };
+  onDels = () => {
     this.sharedData.socketInstance.addEventListener('message', this.printData);
     this.sharedData.socketInstance.send('dels/hello.txt');
-  }
-  onSave() {
+  };
+  onSave = () => {
     this.sharedData.socketInstance.addEventListener('message', this.printData);
     this.sharedData.socketInstance.send(
       'save/hello.txtgfdsgfsdgfdsgsdfgsdfgsdgsdf'
     );
-  }
+  };
   connect() {
     // this.sharedData.connectToServer();
     this.updaterRef.current.restartConnection();
@@ -89,9 +84,6 @@ class HomeScreen extends React.Component<Props, State> {
   }
   closeWebSocket() {
     this.sharedData.socketInstance.close();
-  }
-  onMenuTouch() {
-    alert('Pressed the menu');
   }
   onPress = () => {
     this.props.navigation.openDrawer();
@@ -105,63 +97,21 @@ class HomeScreen extends React.Component<Props, State> {
         <StatusBar barStyle="light-content" />
         <CommContextUpdater ref={this.updaterRef} />
         <View style={styles.body}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              this.onDirs();
-            }}
-          >
-            <Text style={{ color: 'white', textAlign: 'center' }}>Dirs</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              this.onRead();
-            }}
-          >
-            <Text style={{ color: 'white', textAlign: 'center' }}>Read</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              this.onSave();
-            }}
-          >
-            <Text style={{ color: 'white', textAlign: 'center' }}>Save</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              this.onDels();
-            }}
-          >
-            <Text style={{ color: 'white', textAlign: 'center' }}>Delete</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              this.connect();
-            }}
-          >
-            <Text style={{ color: 'white', textAlign: 'center' }}>Connect</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              this.closeWebSocket();
-            }}
-          >
-            <Text style={{ color: 'white', textAlign: 'center' }}>
-              Close Connection
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={this.PrintData}>
-            <Text style={{ color: 'white', textAlign: 'center' }}>
-              Print Data
-            </Text>
-          </TouchableOpacity>
+          <Button color="green" label={'List Files'} onPress={this.onDirs} />
+          <Button color="green" label={'Read'} onPress={this.onRead} />
+          <Button color="green" label={'Save File'} onPress={this.onSave} />
+          <Button color="green" label={'Delete'} onPress={this.onDels} />
+          <Button
+            color="green"
+            label={'Connect to ESP'}
+            onPress={this.connect}
+          />
+          <Button
+            color="green"
+            label={'Close Connection'}
+            onPress={this.closeWebSocket}
+          />
+          <Button color="green" label={'Print Data'} onPress={this.PrintData} />
           <TextInput
             style={{ height: 40, borderColor: 'black' }}
             placeholder="Enter File to Read:"

@@ -3,52 +3,46 @@ import { View, Text } from 'react-native';
 import styles from './SideMenuHeading.style';
 import { NavigationScreenProp, NavigationParams } from 'react-navigation';
 import { NavigationDrawerState } from 'react-navigation-drawer';
+import { Ionicons } from '@expo/vector-icons';
+
+type Navigation = NavigationScreenProp<NavigationDrawerState, NavigationParams>;
 interface Props {
   navigation: Navigation;
   route: string;
   activeRoute: string;
-  navigateTo(route: string): void;
+  navigateTo: (route: string) => void;
+  icon: string;
+  label: string;
 }
-
-type Navigation = NavigationScreenProp<NavigationDrawerState, NavigationParams>;
-
-class SideMenuHeading extends React.PureComponent<Props> {
-  activeScreen: string;
-  constructor(props) {
-    super(props);
-    this.activeScreen = this.props.activeRoute;
-  }
-  // shouldComponentUpdate(nextProp) {
-  //   if (this.activeScreen !==) {
-  //     return true;
-  //   }
-  //   return false;
-  // }
-  fontColor(): string {
-    if (this.props.activeRoute === this.props.route) {
-      return '#29c7ac';
-    } else {
-      return 'gray';
-    }
-  }
-  navigate = () => {
-    this.activeScreen = this.props.route;
-    this.props.navigateTo(this.props.route);
-  };
-  render() {
-    console.log('updating heading: ' + this.props.route);
-    return (
-      <View>
-        <View style={styles.navSectionStyle}>
-          <Text
-            style={[styles.navItemStyle, { color: this.fontColor() }]}
-            onPress={this.navigate}
-          >
-            {this.props.route}
-          </Text>
-        </View>
-      </View>
-    );
-  }
-}
+const navigateTo = (props: Props) => () => {
+  props.navigateTo(props.route);
+};
+const backgroundColor = (props: Props) => {
+  return props.activeRoute !== props.route ? 'white' : '#e5ebee';
+};
+const labelColor = (props: Props) => {
+  return props.activeRoute === props.route ? '#48a5f1' : 'black';
+};
+const SideMenuHeading = (props: Props) => {
+  return (
+    <View
+      style={[
+        styles.sectionHeadingStyle,
+        { backgroundColor: backgroundColor(props) }
+      ]}
+      collapsable={false}
+      onTouchEnd={navigateTo(props)}
+    >
+      <Ionicons
+        style={{ margin: 0 }}
+        name={props.icon}
+        size={30}
+        color={labelColor(props)}
+      />
+      <Text style={[styles.navItemStyle, { color: labelColor(props) }]}>
+        {props.label}
+      </Text>
+    </View>
+  );
+};
 export default SideMenuHeading;

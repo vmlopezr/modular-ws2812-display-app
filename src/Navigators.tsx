@@ -23,15 +23,18 @@ import {
   NavigationState
 } from 'react-navigation';
 import { View } from 'react-native';
+import EffectsScreen from './Screens/Effects/EffectsScreen';
+import PreviewScreen from './Screens/Preview/PreviewScreen';
 type Navigation = NavigationScreenProp<NavigationState, NavigationParams>;
+const defaultScreen = 'Type';
 
 const DashboardTab = createBottomTabNavigator(
   {
-    LedGrid: {
+    Draw: {
       screen: LedGrid,
       navigationOptions: () => ({
         tabBarIcon: ({ focused, tintColor }) => {
-          const iconName = `${focused ? 'ios-keypad' : 'md-keypad'}`;
+          const iconName = `${focused ? 'ios-create' : 'md-create'}`;
           return <Ionicons name={iconName} size={25} color={tintColor} />;
         }
       })
@@ -45,19 +48,19 @@ const DashboardTab = createBottomTabNavigator(
         }
       })
     },
-    Message: {
+    Type: {
       screen: MessageScreen,
       navigationOptions: () => ({
         drawerLabel: () => null,
         tabBarIcon: ({ focused, tintColor }) => {
-          const iconName = `ios-information-circle${focused ? '' : '-outline'}`;
+          const iconName = `${focused ? 'md-laptop' : 'ios-laptop'}`;
           return <Ionicons name={iconName} size={25} color={tintColor} />;
         }
       })
     }
   },
   {
-    initialRouteName: 'Home',
+    initialRouteName: defaultScreen,
     tabBarOptions: {
       activeTintColor: 'tomato',
       inactiveTintColor: 'gray'
@@ -69,8 +72,9 @@ const DashboardTab = createBottomTabNavigator(
 );
 
 function getRouteName(navigation: Navigation): string {
-  if (!navigation.state.index) {
-    return 'Settings';
+  if (navigation.state.index != 1) {
+    const index = navigation.state.index;
+    return navigation.state.routes[index].routeName;
   } else {
     const index = navigation.state.routes[1].index;
     return navigation.state.routes[1].routes[index].routeName;
@@ -79,15 +83,22 @@ function getRouteName(navigation: Navigation): string {
 
 const DrawerNavigator = createDrawerNavigator(
   {
-    Settings: Settings,
-    Dashboard: DashboardTab
+    Settings: {
+      screen: Settings,
+      navigationOptions: {
+        title: 'Test'
+      }
+    },
+    Dashboard: DashboardTab,
+    Effects: EffectsScreen,
+    Preview: PreviewScreen
   },
 
   {
-    // contentComponent: ({ navigation }) => <SideMenu navigation={navigation} />,
+    initialRouteName: 'Dashboard',
     contentComponent: (
       props: React.PropsWithChildren<DrawerContentComponentProps>
-    ) => <SideMenu {...props} />,
+    ) => <SideMenu {...props} defaultScreen={defaultScreen} />,
     drawerWidth: Dimensions.get('window').width - 130,
     navigationOptions: ({ navigation }) => {
       const routeName = getRouteName(navigation);
