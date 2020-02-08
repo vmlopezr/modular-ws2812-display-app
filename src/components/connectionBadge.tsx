@@ -1,13 +1,37 @@
 import React, { useContext } from 'react';
 import { View, Text } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import CustomIcon from './CustomIcon';
 import { CommsContext } from '../contexts/CommsContext';
+import { Ionicons } from '@expo/vector-icons';
 
+const placeIcon = (isConnected: boolean) => {
+  const iconColor = isConnected ? 'green' : 'tomato';
+  const icon = isConnected ? 'ios-cloud-done' : 'cloud-xmark';
+
+  if (isConnected) {
+    return (
+      <Ionicons
+        style={{ paddingBottom: 0, margin: 0 }}
+        name={icon}
+        size={20}
+        color={iconColor}
+      />
+    );
+  } else {
+    return (
+      <CustomIcon
+        style={{ paddingBottom: 0, margin: 0 }}
+        name={icon}
+        size={28}
+        color={iconColor}
+      />
+    );
+  }
+};
 const ConnectionBadge = () => {
   const context = useContext(CommsContext);
-  const iconColor = context.state.ESPConn ? 'green' : 'tomato';
-  const icon = context.state.ESPConn ? 'ios-cloud-done' : 'ios-close-circle';
   const label = context.state.ESPConn ? 'ONLINE' : 'OFFLINE';
+  const iconColor = context.state.ESPConn ? 'green' : 'tomato';
   return (
     <View
       style={{
@@ -17,12 +41,7 @@ const ConnectionBadge = () => {
         alignSelf: 'flex-end'
       }}
     >
-      <Ionicons
-        style={{ paddingBottom: 0, margin: 0 }}
-        name={icon}
-        size={20}
-        color={iconColor}
-      />
+      {placeIcon(context.state.ESPConn)}
       <Text
         style={{
           fontSize: 15,

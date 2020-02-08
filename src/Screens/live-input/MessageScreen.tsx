@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StatusBar, Dimensions } from 'react-native';
-import styles from './MessageScreen.style.';
+import styles, { fonts, fontSizes } from './MessageScreen.style.';
 import {
   NavigationParams,
   NavigationScreenProp,
@@ -21,7 +21,7 @@ class MessageScreen extends React.PureComponent<Props, State> {
   connectionRef: any;
   screenWidth: number;
   fontSize: string;
-  data: string[];
+  font: string;
   constructor(props) {
     super(props);
     this.screenWidth = Math.round(Dimensions.get('window').width);
@@ -29,11 +29,8 @@ class MessageScreen extends React.PureComponent<Props, State> {
       isFocused: false,
       count: 0
     };
-    this.data = [];
-    for (let i = 1; i < 10; i++) {
-      this.data.push(i.toString());
-    }
-    this.fontSize = this.data[0];
+    this.font = fonts[0];
+    this.fontSize = fontSizes[0];
   }
   onMenuTouch() {
     alert('Pressed the Menu Button');
@@ -50,6 +47,9 @@ class MessageScreen extends React.PureComponent<Props, State> {
   };
   handleFontSizeChange = (size: string) => {
     this.fontSize = size;
+  };
+  handleFontChange = (font: string) => {
+    this.font = font;
   };
   render() {
     return (
@@ -74,14 +74,27 @@ class MessageScreen extends React.PureComponent<Props, State> {
             collapsable={false}
             style={{
               alignItems: 'center',
-              width: this.screenWidth,
-              backgroundColor: 'blue'
+              width: this.screenWidth
             }}
           >
             <ValueDropDown
               label="Font Size:"
-              data={this.data}
+              data={fontSizes}
+              icon="font-size"
+              isCustomIcon={true}
+              iconSize={30}
               updateValue={this.handleFontSizeChange}
+            />
+            <View
+              style={{ width: '100%', height: 20, backgroundColor: '#ebebeb' }}
+            ></View>
+            <ValueDropDown
+              label="Fonts:"
+              icon="font-icon2"
+              data={fonts}
+              iconSize={30}
+              isCustomIcon={true}
+              updateValue={this.handleFontChange}
             />
           </View>
         </View>

@@ -2,7 +2,6 @@
 import { createBottomTabNavigator } from 'react-navigation-tabs';
 import {
   createDrawerNavigator,
-  DrawerItems,
   DrawerContentComponentProps
 } from 'react-navigation-drawer';
 import { createStackNavigator } from 'react-navigation-stack';
@@ -12,8 +11,8 @@ import Home from './Screens/Home/HomeScreen';
 import Settings from './Screens/Settings/Settings';
 import MessageScreen from './Screens/live-input/MessageScreen';
 import LedGrid from './Screens/led-grid/LedGrid';
-import { createAppContainer } from 'react-navigation';
-import { Dimensions } from 'react-native';
+import { createAppContainer, NavigationRoute } from 'react-navigation';
+import { Dimensions, Keyboard } from 'react-native';
 import ConnectionBadge from './components/connectionBadge';
 import SideMenu from './Screens/SideMenu';
 
@@ -26,25 +25,37 @@ import { View } from 'react-native';
 import EffectsScreen from './Screens/Effects/EffectsScreen';
 import PreviewScreen from './Screens/Preview/PreviewScreen';
 type Navigation = NavigationScreenProp<NavigationState, NavigationParams>;
+type DrawerNavigation = NavigationScreenProp<
+  NavigationRoute<NavigationParams>,
+  NavigationParams
+>;
 const defaultScreen = 'Type';
-
+type tabBarIconType = {
+  focused: boolean;
+  tintColor: string;
+  horizontal?: boolean;
+};
 const DashboardTab = createBottomTabNavigator(
   {
     Draw: {
       screen: LedGrid,
       navigationOptions: () => ({
-        tabBarIcon: ({ focused, tintColor }) => {
-          const iconName = `${focused ? 'ios-create' : 'md-create'}`;
-          return <Ionicons name={iconName} size={25} color={tintColor} />;
+        tabBarIcon: (options: tabBarIconType) => {
+          const iconName = `${options.focused ? 'ios-create' : 'md-create'}`;
+          return (
+            <Ionicons name={iconName} size={25} color={options.tintColor} />
+          );
         }
       })
     },
     Home: {
       screen: Home,
       navigationOptions: () => ({
-        tabBarIcon: ({ focused, tintColor }) => {
-          const iconName = `${focused ? 'ios-home' : 'md-home'}`;
-          return <Ionicons name={iconName} size={25} color={tintColor} />;
+        tabBarIcon: (options: tabBarIconType) => {
+          const iconName = `${options.focused ? 'ios-home' : 'md-home'}`;
+          return (
+            <Ionicons name={iconName} size={25} color={options.tintColor} />
+          );
         }
       })
     },
@@ -52,9 +63,11 @@ const DashboardTab = createBottomTabNavigator(
       screen: MessageScreen,
       navigationOptions: () => ({
         drawerLabel: () => null,
-        tabBarIcon: ({ focused, tintColor }) => {
-          const iconName = `${focused ? 'md-laptop' : 'ios-laptop'}`;
-          return <Ionicons name={iconName} size={25} color={tintColor} />;
+        tabBarIcon: (options: tabBarIconType) => {
+          const iconName = `${options.focused ? 'md-laptop' : 'ios-laptop'}`;
+          return (
+            <Ionicons name={iconName} size={25} color={options.tintColor} />
+          );
         }
       })
     }
@@ -80,7 +93,10 @@ function getRouteName(navigation: Navigation): string {
     return navigation.state.routes[1].routes[index].routeName;
   }
 }
-
+const onPress = (navigation: DrawerNavigation) => () => {
+  Keyboard.dismiss();
+  navigation.toggleDrawer();
+};
 const DrawerNavigator = createDrawerNavigator(
   {
     Settings: {
@@ -115,7 +131,7 @@ const DrawerNavigator = createDrawerNavigator(
         headerLeft: () => (
           <Ionicons
             name="md-menu"
-            onPress={() => navigation.toggleDrawer()}
+            onPress={onPress(navigation)}
             size={25}
             style={{ paddingLeft: 10 }}
             color={'#fff'}

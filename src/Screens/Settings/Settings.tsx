@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StatusBar, TextInput } from 'react-native';
+import { View, StatusBar } from 'react-native';
 import SharedData from '../../sharedData';
 import {
   NavigationParams,
@@ -55,10 +55,18 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
         <StatusBar barStyle="light-content" />
         <View style={styles.body}>
           <NumberInput
+            isCustomIcon={true}
+            icon={'grid-width2'}
+            iconSize={45}
+            iconColor={'grey'}
             label={'Billboard Width:'}
             updateValue={this.handleWidthChange}
           />
           <NumberInput
+            icon={'grid-height2'}
+            iconColor="tomato"
+            iconSize={45}
+            isCustomIcon={true}
             label={'Billboard Height:'}
             updateValue={this.handleHeightChange}
           />

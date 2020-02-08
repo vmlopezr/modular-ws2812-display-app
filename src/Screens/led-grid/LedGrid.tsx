@@ -233,6 +233,7 @@ class LedGrid extends React.PureComponent<Props, State> {
     }
     return grid;
   }
+
   clearScreen = () => {
     this.NodeRef.map(row => {
       row.map(Node => {

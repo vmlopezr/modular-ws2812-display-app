@@ -3,20 +3,18 @@ import { Text, TouchableOpacity, StyleSheet } from 'react-native';
 interface Props {
   label: string;
   onPress: () => void;
-  color: string;
+  backgroundColor?: string;
   width?: number;
+  fontColor?: string;
 }
 const styles = StyleSheet.create({
   button: {
     height: 45,
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center'
   },
   label: {
-    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
     alignItems: 'center'
@@ -26,13 +24,20 @@ const onPress = (props: Props) => () => {
   props.onPress();
 };
 export const Button = (props: Props) => {
-  const width = props.width ? props.width : 150;
+  const width = props.width ? props.width : 'auto';
+  const fontColor = props.fontColor ? props.fontColor : 'black';
+  const backgroundColor = props.backgroundColor
+    ? props.backgroundColor
+    : 'gray';
   return (
     <TouchableOpacity
-      style={[styles.button, { backgroundColor: props.color, width: width }]}
+      style={[
+        styles.button,
+        { backgroundColor: backgroundColor, width: width }
+      ]}
       onPress={onPress(props)}
     >
-      <Text style={styles.label}>{props.label}</Text>
+      <Text style={[styles.label, { color: fontColor }]}>{props.label}</Text>
     </TouchableOpacity>
   );
 };
