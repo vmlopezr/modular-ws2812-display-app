@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CustomIcon from './CustomIcon';
 interface Props {
+  defaultValue?: string;
   label: string;
   updateValue: (value: string) => void;
   icon?: string;
@@ -13,7 +14,6 @@ interface Props {
   backgroundColor?: string;
 }
 interface State {
-  prevValue: string;
   value: string;
   backgroundColor: string;
 }
@@ -35,13 +35,14 @@ const styles = StyleSheet.create({
     borderTopWidth: 1
   }
 });
-class NumberInput extends React.PureComponent<Props, State> {
+class StringInput extends React.PureComponent<Props, State> {
   inputRef: React.RefObject<TextInput>;
+
   constructor(props) {
     super(props);
+    const defaultValue = this.props.defaultValue ? this.props.defaultValue : '';
     this.state = {
-      value: '1',
-      prevValue: '1',
+      value: defaultValue,
       backgroundColor: this.props.backgroundColor
         ? this.props.backgroundColor
         : '#fff'
@@ -49,18 +50,9 @@ class NumberInput extends React.PureComponent<Props, State> {
     this.inputRef = React.createRef();
   }
   handleValueChange = () => {
-    if (this.isNormalInteger(this.state.value)) {
-      this.setState({ prevValue: this.state.value });
-      this.props.updateValue(this.state.value);
-    } else {
-      alert('This field only accepts positive, non-zero numbers');
-      this.setState({ value: this.state.prevValue });
-    }
+    this.props.updateValue(this.state.value);
   };
-  isNormalInteger(text) {
-    const n = Math.floor(Number(text));
-    return n !== Infinity && String(n) === text && n > 0;
-  }
+
   onChange = (text: string) => {
     this.setState({ value: text });
   };
@@ -123,12 +115,10 @@ class NumberInput extends React.PureComponent<Props, State> {
             height: 49,
             borderBottomWidth: 1,
             borderColor: '#d3d3d3',
-            fontSize: 20
+            fontSize: 15
           }}
-          defaultValue={this.state.value}
           value={this.state.value}
-          keyboardType="number-pad"
-          returnKeyType="done"
+          returnKeyType="default"
           onChangeText={this.onChange}
           onEndEditing={this.handleValueChange}
         />
@@ -136,4 +126,4 @@ class NumberInput extends React.PureComponent<Props, State> {
     );
   }
 }
-export default NumberInput;
+export default StringInput;

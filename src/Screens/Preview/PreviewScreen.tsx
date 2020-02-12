@@ -4,8 +4,13 @@ import styles from './PreviewScreen.style';
 import {
   NavigationParams,
   NavigationScreenProp,
-  NavigationState
+  NavigationState,
+  SafeAreaView
 } from 'react-navigation';
+import GlobalStyles from '../GlobalStyles';
+import ConnectionBadge from '../../components/connectionBadge';
+import { Ionicons } from '@expo/vector-icons';
+import AppHeader from '../../components/AppHeader';
 interface Props {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
 }
@@ -32,12 +37,36 @@ class PreviewScreen extends React.PureComponent<Props, State> {
     this.setState({ count: newcount });
   };
   onPress = () => {
-    this.props.navigation.openDrawer();
+    this.props.navigation.toggleDrawer();
   };
   render() {
     return (
-      <View style={styles.page}>
-        <StatusBar barStyle="light-content" />
+      <SafeAreaView style={GlobalStyles.droidSafeArea}>
+        {/* <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : null}
+        style={{ flex: 1, width: '100%' }}
+        enabled={true}
+        keyboardVerticalOffset={100}
+      > */}
+        {/* <View style={GlobalStyles.header}>
+          <StatusBar barStyle="light-content" />
+          <View style={{ width: 50 }}>
+            <Ionicons
+              name="md-menu"
+              onPress={this.onPress}
+              size={25}
+              style={{ paddingLeft: 10 }}
+              color={'#fff'}
+            />
+          </View>
+          <Text style={styles.title}>Preview</Text>
+
+          <View>
+            <ConnectionBadge />
+          </View>
+        </View> */}
+        <AppHeader title="Preview" navigation={this.props.navigation} />
+
         <View style={styles.body}>
           <View>
             <Text>{this.state.count}</Text>
@@ -49,7 +78,7 @@ class PreviewScreen extends React.PureComponent<Props, State> {
           </TouchableOpacity>
           <Text>Preview Page</Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 }

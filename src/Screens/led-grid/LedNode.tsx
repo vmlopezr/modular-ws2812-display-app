@@ -51,6 +51,9 @@ class LedNode extends React.Component<Props, State> {
       this.state.backgroundcolor
     );
   }
+  updateColor(color: string) {
+    this.setState({ backgroundcolor: color });
+  }
   resetColor(): void {
     // this.setState({ backgroundcolor: '#000000' });
     this.setState({ backgroundcolor: '#ffffff' });

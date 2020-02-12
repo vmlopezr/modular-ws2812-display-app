@@ -6,9 +6,12 @@ import {
   NavigationScreenProp,
   NavigationState,
   NavigationEvents,
-  ScrollView
+  ScrollView,
+  SafeAreaView
 } from 'react-navigation';
 import ValueDropDown from '../../components/ValueDropDown';
+import GlobalStyles from '../GlobalStyles';
+import AppHeader from '../../components/AppHeader';
 interface Props {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
 }
@@ -40,10 +43,10 @@ class MessageScreen extends React.PureComponent<Props, State> {
     this.setState({ count: newcount });
   };
   onPress = () => {
-    this.props.navigation.openDrawer();
+    this.props.navigation.toggleDrawer();
   };
   onEnter = () => {
-    console.log('entered message screen');
+    // console.log('entered message screen');
   };
   handleFontSizeChange = (size: string) => {
     this.fontSize = size;
@@ -53,19 +56,29 @@ class MessageScreen extends React.PureComponent<Props, State> {
   };
   render() {
     return (
-      <ScrollView>
-        {/* <Loader loading={this.loading} /> */}
+      <SafeAreaView style={GlobalStyles.droidSafeArea}>
         <StatusBar barStyle="light-content" />
         <NavigationEvents onDidFocus={this.onEnter} />
+        {/* <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : null}
+        style={{ flex: 1, width: '100%' }}
+        enabled={true}
+        keyboardVerticalOffset={100}
+      > */}
+        <AppHeader
+          title="Billboard Typing"
+          navigation={this.props.navigation}
+        />
+
         <View style={styles.body} collapsable={false}>
           <View
             collapsable={false}
             style={{
               backgroundColor: 'white',
-              borderColor: 'black',
-              borderWidth: 1,
               width: this.screenWidth,
               height: this.screenWidth,
+              borderBottomWidth: 1,
+              borderColor: '202020',
               alignItems: 'center',
               justifyContent: 'center'
             }}
@@ -74,31 +87,38 @@ class MessageScreen extends React.PureComponent<Props, State> {
             collapsable={false}
             style={{
               alignItems: 'center',
-              width: this.screenWidth
+              width: this.screenWidth,
+              height: '100%'
             }}
           >
-            <ValueDropDown
-              label="Font Size:"
-              data={fontSizes}
-              icon="font-size"
-              isCustomIcon={true}
-              iconSize={30}
-              updateValue={this.handleFontSizeChange}
-            />
-            <View
-              style={{ width: '100%', height: 20, backgroundColor: '#ebebeb' }}
-            ></View>
-            <ValueDropDown
-              label="Fonts:"
-              icon="font-icon2"
-              data={fonts}
-              iconSize={30}
-              isCustomIcon={true}
-              updateValue={this.handleFontChange}
-            />
+            <ScrollView style={{ flex: 1, width: this.screenWidth }}>
+              <ValueDropDown
+                label="Font Size:"
+                data={fontSizes}
+                icon="font-size"
+                isCustomIcon={true}
+                iconSize={30}
+                updateValue={this.handleFontSizeChange}
+              />
+              <View
+                style={{
+                  width: '100%',
+                  height: 20,
+                  backgroundColor: '#ebebeb'
+                }}
+              ></View>
+              <ValueDropDown
+                label="Fonts:"
+                icon="font-icon2"
+                data={fonts}
+                iconSize={30}
+                isCustomIcon={true}
+                updateValue={this.handleFontChange}
+              />
+            </ScrollView>
           </View>
         </View>
-      </ScrollView>
+      </SafeAreaView>
     );
   }
 }

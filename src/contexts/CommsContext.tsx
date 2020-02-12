@@ -1,5 +1,5 @@
 import React, { createContext } from 'react';
-import SharedData from '../sharedData';
+import LocalStorage from '../LocalStorage';
 
 export interface CommsCtx {
   state: CommsState;
@@ -16,28 +16,33 @@ export const CommsContext = createContext<CommsCtx>(null);
 export const CommsConsumer = CommsContext.Consumer;
 
 class CommsContextProvider extends React.PureComponent<{}, CommsState> {
-  sharedData: SharedData;
+  storage: LocalStorage;
   state = {
     ESPConn: false
   };
   constructor(props) {
     super(props);
-    this.sharedData = SharedData.getInstance();
+    this.storage = LocalStorage.getInstance();
   }
   subscribeSocketConnection = () => {
     if (!this.state.ESPConn) {
-      this.sharedData.connectToServer();
-      this.sharedData.socketInstance.addEventListener('close', () => {
+      this.storage.connectToServer();
+      this.storage.socketInstance.addEventListener('close', () => {
         console.log('connection closed');
+        this.storage.ESPConn = false;
         this.setState({ ESPConn: false });
       });
-      this.sharedData.socketInstance.addEventListener('open', () => {
+      this.storage.socketInstance.addEventListener('open', () => {
         console.log('connection opened');
+        this.storage.ESPConn = true;
         this.setState({ ESPConn: true });
       });
-      this.sharedData.socketInstance.addEventListener('error', event => {
-        console.log('error occurred with the websocket connection.');
-        console.log(event);
+      this.storage.socketInstance.addEventListener('error', () => {
+        // When the connection attempt times out after 10 seconds
+        // Alert the user. The close event runs after error.
+        alert(
+          'Warning: Could not connect to the ESP32. Verify that it is powered correctly and try again.'
+        );
       });
     }
   };

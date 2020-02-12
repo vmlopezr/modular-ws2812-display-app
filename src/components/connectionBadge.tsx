@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
 import { View, Text } from 'react-native';
 import CustomIcon from './CustomIcon';
-import { CommsContext } from '../contexts/CommsContext';
+import { CommsContext, CommsCtx } from '../contexts/CommsContext';
 import { Ionicons } from '@expo/vector-icons';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const placeIcon = (isConnected: boolean) => {
   const iconColor = isConnected ? 'green' : 'tomato';
@@ -22,38 +23,43 @@ const placeIcon = (isConnected: boolean) => {
       <CustomIcon
         style={{ paddingBottom: 0, margin: 0 }}
         name={icon}
-        size={28}
+        size={20}
         color={iconColor}
       />
     );
   }
+};
+const connectESP = (context: CommsCtx) => () => {
+  context.actions.reconnectESP();
 };
 const ConnectionBadge = () => {
   const context = useContext(CommsContext);
   const label = context.state.ESPConn ? 'ONLINE' : 'OFFLINE';
   const iconColor = context.state.ESPConn ? 'green' : 'tomato';
   return (
-    <View
-      style={{
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'column',
-        alignSelf: 'flex-end'
-      }}
-    >
-      {placeIcon(context.state.ESPConn)}
-      <Text
+    <TouchableOpacity onPress={connectESP(context)}>
+      <View
         style={{
-          fontSize: 15,
-          color: iconColor,
-          fontWeight: 'bold',
-          paddingTop: 0,
-          margin: 0
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'column',
+          alignSelf: 'flex-end'
         }}
       >
-        {label}
-      </Text>
-    </View>
+        {placeIcon(context.state.ESPConn)}
+        <Text
+          style={{
+            fontSize: 15,
+            color: iconColor,
+            fontWeight: 'bold',
+            paddingTop: 0,
+            margin: 0
+          }}
+        >
+          {label}
+        </Text>
+      </View>
+    </TouchableOpacity>
   );
 };
 export default ConnectionBadge;

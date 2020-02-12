@@ -1,11 +1,14 @@
 import React from 'react';
-import { View, Text, StatusBar, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import styles from './EffectsScreen.style';
 import {
   NavigationParams,
   NavigationScreenProp,
-  NavigationState
+  NavigationState,
+  SafeAreaView
 } from 'react-navigation';
+import GlobalStyles from '../GlobalStyles';
+import AppHeader from '../../components/AppHeader';
 interface Props {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
 }
@@ -32,12 +35,12 @@ class EffectsScreen extends React.PureComponent<Props, State> {
     this.setState({ count: newcount });
   };
   onPress = () => {
-    this.props.navigation.openDrawer();
+    this.props.navigation.toggleDrawer();
   };
   render() {
     return (
-      <View style={styles.page}>
-        <StatusBar barStyle="light-content" />
+      <SafeAreaView style={GlobalStyles.droidSafeArea}>
+        <AppHeader title="Effects" navigation={this.props.navigation} />
         <View style={styles.body}>
           <View>
             <Text>{this.state.count}</Text>
@@ -49,7 +52,7 @@ class EffectsScreen extends React.PureComponent<Props, State> {
           </TouchableOpacity>
           <Text>Effects Page</Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 }

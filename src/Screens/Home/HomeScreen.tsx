@@ -1,14 +1,27 @@
 import React from 'react';
-import { View, TextInput, StatusBar } from 'react-native';
+import {
+  View,
+  TextInput,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView
+} from 'react-native';
 import styles from './HomeScreen.style.';
-import SharedData from '../../sharedData';
+import LocalStorage from '../../LocalStorage';
+import AppHeader from '../../components/AppHeader';
 import {
   NavigationParams,
   NavigationScreenProp,
   NavigationState
 } from 'react-navigation';
-import { Button } from '../../components/Button';
-import CommContextUpdater from '../../components/CommContextUpdater';
+
+import { CustomButton } from '../../components/CustomButton';
+import { ScrollView } from 'react-native-gesture-handler';
+
+import GlobalStyles from '../GlobalStyles';
+import StringInput from '../../components/StringInput';
+import Loader from '../../components/Loader';
 interface Props {
   isFocused: boolean;
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
@@ -16,113 +29,38 @@ interface Props {
 interface State {
   width: number;
   height: number;
+  read: boolean;
+  write: boolean;
 }
 
 class HomeScreen extends React.Component<Props, State> {
   width: number;
   height: number;
-  sharedData: SharedData;
-  filename: string;
-  updaterRef: any;
-  data: string;
+  storage: LocalStorage;
+
   constructor(props) {
     super(props);
-    this.sharedData = SharedData.getInstance();
-    this.width = this.sharedData.width;
-    this.height = this.sharedData.height;
-    this.updaterRef = React.createRef();
-    this.data = ' ';
-  }
 
-  handleFilenameChange(filename: string): void {
-    this.filename = filename;
-  }
-  printData = event => {
-    console.log(event.data);
-    this.sharedData.socketInstance.removeEventListener(
-      'message',
-      this.printData
-    );
-  };
-  readData = (event: { data: string }) => {
-    if (event.data === 'EX1T') {
-      this.sharedData.socketInstance.removeEventListener(
-        'message',
-        this.readData
-      );
-      console.log('finished reading');
-    } else {
-      console.log(event.data);
-      console.log(typeof event.data);
-      this.data = event.data;
-      console.log(this.data);
-    }
-  };
-  onDirs() {
-    this.sharedData.socketInstance.addEventListener('message', this.printData);
-    this.sharedData.socketInstance.send('dirs');
-  }
-  onRead = () => {
-    this.sharedData.socketInstance.addEventListener('message', this.readData);
-    const path = 'read/' + this.filename;
-    this.sharedData.socketInstance.send(path);
-  };
-  onDels = () => {
-    this.sharedData.socketInstance.addEventListener('message', this.printData);
-    this.sharedData.socketInstance.send('dels/hello.txt');
-  };
-  onSave = () => {
-    this.sharedData.socketInstance.addEventListener('message', this.printData);
-    this.sharedData.socketInstance.send(
-      'save/hello.txtgfdsgfsdgfdsgsdfgsdfgsdgsdf'
-    );
-  };
-  connect() {
-    // this.sharedData.connectToServer();
-    this.updaterRef.current.restartConnection();
-    // this.context.
-  }
-  closeWebSocket() {
-    this.sharedData.socketInstance.close();
-  }
-  onPress = () => {
-    this.props.navigation.openDrawer();
-  };
-  PrintData() {
-    console.log(this.data);
+    this.storage = LocalStorage.getInstance();
+    this.width = this.storage.width;
+    this.height = this.storage.height;
   }
   render() {
     return (
-      <View style={styles.page}>
-        <StatusBar barStyle="light-content" />
-        <CommContextUpdater ref={this.updaterRef} />
+      <SafeAreaView style={GlobalStyles.droidSafeArea}>
+        <AppHeader title="Home" navigation={this.props.navigation} />
         <View style={styles.body}>
-          <Button color="green" label={'List Files'} onPress={this.onDirs} />
-          <Button color="green" label={'Read'} onPress={this.onRead} />
-          <Button color="green" label={'Save File'} onPress={this.onSave} />
-          <Button color="green" label={'Delete'} onPress={this.onDels} />
-          <Button
-            color="green"
-            label={'Connect to ESP'}
-            onPress={this.connect}
-          />
-          <Button
-            color="green"
-            label={'Close Connection'}
-            onPress={this.closeWebSocket}
-          />
-          <Button color="green" label={'Print Data'} onPress={this.PrintData} />
-          <TextInput
-            style={{ height: 40, borderColor: 'black' }}
-            placeholder="Enter File to Read:"
-            blurOnSubmit={true}
-            returnKeyType="done"
-            onEndEditing={({ nativeEvent }) =>
-              this.handleFilenameChange(nativeEvent.text)
-            }
-          />
+          <ScrollView>
+            <View
+              style={{
+                width: '100%',
+                height: 20,
+                backgroundColor: '#ebebeb'
+              }}
+            ></View>
+          </ScrollView>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 }

@@ -4,33 +4,20 @@ import {
   createDrawerNavigator,
   DrawerContentComponentProps
 } from 'react-navigation-drawer';
-import { createStackNavigator } from 'react-navigation-stack';
 import React from 'react';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
 import Home from './Screens/Home/HomeScreen';
 import Settings from './Screens/Settings/Settings';
 import MessageScreen from './Screens/live-input/MessageScreen';
 import LedGrid from './Screens/led-grid/LedGrid';
-import { createAppContainer, NavigationRoute } from 'react-navigation';
-import { Dimensions, Keyboard } from 'react-native';
-import ConnectionBadge from './components/connectionBadge';
+import { createAppContainer } from 'react-navigation';
+import { Dimensions } from 'react-native';
 import SideMenu from './Screens/SideMenu';
-
-import {
-  NavigationParams,
-  NavigationScreenProp,
-  NavigationState
-} from 'react-navigation';
-import { View } from 'react-native';
 import EffectsScreen from './Screens/Effects/EffectsScreen';
 import PreviewScreen from './Screens/Preview/PreviewScreen';
-type Navigation = NavigationScreenProp<NavigationState, NavigationParams>;
-type DrawerNavigation = NavigationScreenProp<
-  NavigationRoute<NavigationParams>,
-  NavigationParams
->;
+
 const defaultScreen = 'Type';
-type tabBarIconType = {
+export type tabBarIconType = {
   focused: boolean;
   tintColor: string;
   horizontal?: boolean;
@@ -76,7 +63,8 @@ const DashboardTab = createBottomTabNavigator(
     initialRouteName: defaultScreen,
     tabBarOptions: {
       activeTintColor: 'tomato',
-      inactiveTintColor: 'gray'
+      inactiveTintColor: 'gray',
+      keyboardHidesTabBar: true
     },
     navigationOptions: {
       headerShown: false
@@ -84,27 +72,9 @@ const DashboardTab = createBottomTabNavigator(
   }
 );
 
-function getRouteName(navigation: Navigation): string {
-  if (navigation.state.index != 1) {
-    const index = navigation.state.index;
-    return navigation.state.routes[index].routeName;
-  } else {
-    const index = navigation.state.routes[1].index;
-    return navigation.state.routes[1].routes[index].routeName;
-  }
-}
-const onPress = (navigation: DrawerNavigation) => () => {
-  Keyboard.dismiss();
-  navigation.toggleDrawer();
-};
-const DrawerNavigator = createDrawerNavigator(
+const MainNavigator = createDrawerNavigator(
   {
-    Settings: {
-      screen: Settings,
-      navigationOptions: {
-        title: 'Test'
-      }
-    },
+    Settings: Settings,
     Dashboard: DashboardTab,
     Effects: EffectsScreen,
     Preview: PreviewScreen
@@ -115,51 +85,7 @@ const DrawerNavigator = createDrawerNavigator(
     contentComponent: (
       props: React.PropsWithChildren<DrawerContentComponentProps>
     ) => <SideMenu {...props} defaultScreen={defaultScreen} />,
-    drawerWidth: Dimensions.get('window').width - 130,
-    navigationOptions: ({ navigation }) => {
-      const routeName = getRouteName(navigation);
-      return {
-        gestureEnabled: false,
-        headerTitle: routeName,
-        headerTitleStyle: {
-          fontWeight: 'bold'
-        },
-        headerStyle: {
-          backgroundColor: '#777'
-        },
-        headerTintColor: '#fff',
-        headerLeft: () => (
-          <Ionicons
-            name="md-menu"
-            onPress={onPress(navigation)}
-            size={25}
-            style={{ paddingLeft: 10 }}
-            color={'#fff'}
-          />
-        ),
-        headerRight: () => (
-          <View style={{ paddingRight: 10 }}>
-            <ConnectionBadge />
-          </View>
-        )
-      };
-    }
-  }
-);
-
-const MainNavigator = createStackNavigator(
-  {
-    App: {
-      screen: DrawerNavigator,
-      navigationOptions: {
-        gestureEnabled: false
-      }
-    }
-  },
-  {
-    navigationOptions: {
-      gestureEnabled: false
-    }
+    drawerWidth: Dimensions.get('window').width - 100
   }
 );
 

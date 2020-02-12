@@ -1,17 +1,9 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+const screenHeight = Math.round(Dimensions.get('window').height);
 export default StyleSheet.create({
-  page: {
-    flex: 1,
-    backgroundColor: '#08386D'
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: 'white'
-  },
   body: {
-    backgroundColor: '#ffffff',
-    flex: 1
+    backgroundColor: '#ebebeb',
+    flex: 26
   },
   button: {
     marginRight: 40,

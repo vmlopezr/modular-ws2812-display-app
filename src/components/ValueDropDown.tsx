@@ -6,15 +6,15 @@ import {
   Modal,
   NativeSyntheticEvent,
   NativeScrollEvent,
-  Platform
+  Platform,
+  GestureResponderEvent
 } from 'react-native';
 import styles from './styles/ValueDropDown.style';
-import { Button } from './Button';
+import { CustomButton } from './CustomButton';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import CustomIcon from './CustomIcon';
-
 interface Props {
   label: string;
   updateValue: (value: string) => void;
@@ -35,32 +35,39 @@ class ValueDropDown extends React.PureComponent<Props, State> {
   timer: NodeJS.Timeout;
   momentumStarted: boolean;
   isScrollTo: boolean;
-  sview: any;
+  scrollRef: any;
+  prevIndex: number;
 
   constructor(props) {
     super(props);
-
+    this.prevIndex = 0;
     this.state = {
       valueIndex: 0,
       modalVisible: false,
       backgroundColor: 'rgba(255,255,255,1)'
     };
-    this.sview = React.createRef();
+    this.scrollRef = React.createRef();
   }
   scrollFix(e) {
     let verticalY = 0;
     if (e.nativeEvent.contentOffset) {
       verticalY = e.nativeEvent.contentOffset.y;
     }
+    let verticalElem = 0;
     const selectedIndex = Math.round(verticalY / pickerItemHeight);
-    const verticalElem = selectedIndex * pickerItemHeight;
-
+    if (selectedIndex <= 0) {
+      verticalElem = 0;
+    } else if (selectedIndex >= this.props.data.length - 1) {
+      verticalElem = (this.props.data.length - 1) * pickerItemHeight;
+    } else {
+      verticalElem = selectedIndex * pickerItemHeight;
+    }
     if (verticalElem !== verticalY) {
       if (Platform.OS === 'ios') {
         this.isScrollTo = true;
       }
-      if (this.sview) {
-        this.sview.current.scrollTo({ y: verticalElem });
+      if (this.scrollRef) {
+        this.scrollRef.current.scrollTo({ y: verticalElem });
       }
     }
     if (this.state.valueIndex === selectedIndex) {
@@ -113,14 +120,22 @@ class ValueDropDown extends React.PureComponent<Props, State> {
   updateOpacity = () => {
     this.setState({ backgroundColor: 'rgb(200, 196, 196)' });
   };
-  scrollToIndex = () => {
+  scrollToState = () => {
     const yPos = pickerItemHeight * this.state.valueIndex;
     setTimeout(() => {
-      if (this.sview) {
-        this.sview.current.scrollTo({ y: yPos });
+      if (this.scrollRef) {
+        this.scrollRef.current.scrollTo({ y: yPos });
       }
     }, 0);
     this.setState({ modalVisible: true, backgroundColor: 'rgb(255,255,255)' });
+  };
+  scrollToIndex = (index: number) => {
+    const yPos = pickerItemHeight * index;
+    setTimeout(() => {
+      if (this.scrollRef) {
+        this.scrollRef.current.scrollTo({ y: yPos });
+      }
+    }, 0);
   };
   onMomentumScrollBegin = () => {
     this.momentumStarted = true;
@@ -153,6 +168,14 @@ class ValueDropDown extends React.PureComponent<Props, State> {
       );
     }
   };
+  onTouch = (event: GestureResponderEvent) => {
+    if (!this.momentumStarted && !this.dragStarted) {
+      const index = Math.floor(
+        (event.nativeEvent.locationY - 65) / pickerItemHeight
+      );
+      this.scrollToIndex(index);
+    }
+  };
   render() {
     return (
       <View style={styles.parentContainer}>
@@ -161,7 +184,7 @@ class ValueDropDown extends React.PureComponent<Props, State> {
             styles.container,
             { backgroundColor: this.state.backgroundColor }
           ]}
-          onTouchEnd={this.scrollToIndex}
+          onTouchEnd={this.scrollToState}
           onTouchStart={this.updateOpacity}
         >
           {this.props.icon && this.placeIcon()}
@@ -192,7 +215,7 @@ class ValueDropDown extends React.PureComponent<Props, State> {
             <View style={styles.valueSelector}></View>
 
             <View style={styles.modalHeader}>
-              <Button
+              <CustomButton
                 width={60}
                 backgroundColor="transparent"
                 label="Done"
@@ -202,21 +225,27 @@ class ValueDropDown extends React.PureComponent<Props, State> {
             </View>
             <View style={styles.pickerScrollArea}>
               <ScrollView
-                ref={this.sview}
+                ref={this.scrollRef}
                 showsVerticalScrollIndicator={false}
                 onMomentumScrollEnd={this.onMomentumScrollEnd}
                 onMomentumScrollBegin={this.onMomentumScrollBegin}
                 onScrollBeginDrag={this.onScrollBeginDrag}
                 onScrollEndDrag={this.onScrollEndDrag}
-                bounces={false}
+                onTouchEnd={this.onTouch}
               >
-                <View style={styles.scrollTopFiller}></View>
+                <View
+                  style={styles.scrollTopFiller}
+                  pointerEvents="none"
+                ></View>
                 {this.props.data.map((value, ID) => (
-                  <View key={ID} style={styles.pickerItem}>
+                  <View key={ID} style={styles.pickerItem} pointerEvents="none">
                     <Text style={styles.pickerText}>{value}</Text>
                   </View>
                 ))}
-                <View style={styles.scrollBottomFiller}></View>
+                <View
+                  style={styles.scrollBottomFiller}
+                  pointerEvents="none"
+                ></View>
               </ScrollView>
               <LinearGradient
                 style={{
@@ -227,7 +256,7 @@ class ValueDropDown extends React.PureComponent<Props, State> {
                 }}
                 colors={[
                   'rgba(255, 255, 255, 1.0)',
-                  'rgba(240, 240, 240, 0.85)'
+                  'rgba(240, 240, 240, 0.6)'
                 ]}
                 pointerEvents={'none'}
               />
@@ -240,7 +269,7 @@ class ValueDropDown extends React.PureComponent<Props, State> {
                   height: 145
                 }}
                 colors={[
-                  'rgba(245, 245, 245, 0.8)',
+                  'rgba(245, 245, 245, 0.6)',
                   'rgba(255, 255, 255, 1.0)'
                 ]}
                 pointerEvents={'none'}

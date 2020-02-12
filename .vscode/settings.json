@@ -1,7 +1,7 @@
 {   "editor.fontFamily": "Roboto Mono",
   "workbench.colorCustomizations": {
-    "editor.selectionBackground": "#2a71ac",
-    "editor.selectionHighlightBackground": "#4db7e0",
+    "editor.selectionBackground": "#1f7cc8",
+    "editor.selectionHighlightBackground": "#48c6f8",
   },
   "[Python]":{
       "editor.tabSize": 4
@@ -52,6 +52,8 @@
     ],
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": true
-    }
+    },
+    "emulator.emulatorPathWindows": "C:\\Users\\vmlop\\AppData\\Local\\Android\\Sdk\\emulator\\emulator.exe",
+    "emulator.androidColdBoot": true
 
 }
