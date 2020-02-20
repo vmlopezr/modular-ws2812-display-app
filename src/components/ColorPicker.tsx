@@ -134,6 +134,7 @@ class ColorPicker extends React.Component<Props, State> {
         ></View>
         <View style={styles.modal}>
           <View style={styles.modalHeader}>
+            <View style={{ flex: 5 }}></View>
             <CustomButton
               width={60}
               backgroundColor="transparent"

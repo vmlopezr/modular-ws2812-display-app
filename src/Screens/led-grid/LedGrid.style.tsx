@@ -44,5 +44,16 @@ export default StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(150,150,150,0.5)',
     zIndex: 2
+  },
+  filenameDisplay: {
+    height: 50,
+    width: '100%',
+    borderColor: '#525252',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    backgroundColor: 'white',
+    flexDirection: 'row'
   }
 });

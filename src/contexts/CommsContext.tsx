@@ -36,6 +36,13 @@ class CommsContextProvider extends React.PureComponent<{}, CommsState> {
         console.log('connection opened');
         this.storage.ESPConn = true;
         this.setState({ ESPConn: true });
+        if (this.storage.ESPConn) {
+          const data = 'size' + this.storage.height + ' ' + this.storage.width;
+          this.storage.socketInstance.send(data);
+          if (this.storage.focusedScreen === 'LedGrid') {
+            this.storage.socketInstance.send('LIVE');
+          }
+        }
       });
       this.storage.socketInstance.addEventListener('error', () => {
         // When the connection attempt times out after 10 seconds

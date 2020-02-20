@@ -12,6 +12,7 @@ import {
 import ValueDropDown from '../../components/ValueDropDown';
 import GlobalStyles from '../GlobalStyles';
 import AppHeader from '../../components/AppHeader';
+import LocalStorage from '../../LocalStorage';
 interface Props {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
 }
@@ -25,6 +26,7 @@ class MessageScreen extends React.PureComponent<Props, State> {
   screenWidth: number;
   fontSize: string;
   font: string;
+  storage: LocalStorage;
   constructor(props) {
     super(props);
     this.screenWidth = Math.round(Dimensions.get('window').width);
@@ -34,6 +36,7 @@ class MessageScreen extends React.PureComponent<Props, State> {
     };
     this.font = fonts[0];
     this.fontSize = fontSizes[0];
+    this.storage = LocalStorage.getInstance();
   }
   onMenuTouch() {
     alert('Pressed the Menu Button');
@@ -46,6 +49,7 @@ class MessageScreen extends React.PureComponent<Props, State> {
     this.props.navigation.toggleDrawer();
   };
   onEnter = () => {
+    this.storage.focusedScreen = 'Message';
     // console.log('entered message screen');
   };
   handleFontSizeChange = (size: string) => {

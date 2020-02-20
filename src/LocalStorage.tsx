@@ -4,10 +4,12 @@ export default class LocalStorage {
   socketInstance: WebSocket;
   width: number;
   height: number;
+  focusedScreen: string;
   constructor() {
     this.ESPConn = false;
-    this.width = 1;
-    this.height = 1;
+    this.width = 8;
+    this.height = 8;
+    this.focusedScreen = 'Settings';
   }
 
   static getInstance(): LocalStorage {
@@ -30,5 +32,6 @@ export default class LocalStorage {
   connectToServer(): void {
     // this.socketInstance = new WebSocket('ws://192.168.4.1/');
     this.socketInstance = new WebSocket('ws://192.168.1.71/');
+    // this.socketInstance = new WebSocket('ws://172.25.79.238/');
   }
 }

@@ -48,13 +48,27 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
     this.height = parseInt(text);
   };
   onExit = () => {
-    if (
-      this.width !== this.storage.width ||
-      this.height !== this.storage.height
-    ) {
-      this.storage.setHeight(this.height);
-      this.storage.setWidth(this.width);
+    if (this.width % 8 == 0 && this.height % 8 == 0) {
+      if (
+        this.width !== this.storage.width ||
+        this.height !== this.storage.height
+      ) {
+        this.storage.setHeight(this.height);
+        this.storage.setWidth(this.width);
+        if (this.storage.ESPConn) {
+          const data = 'size' + this.height + ' ' + this.width;
+          this.storage.socketInstance.send(data);
+        }
+      }
+    } else {
+      this.props.navigation.toggleDrawer();
+      this.props.navigation.navigate('Settings');
+
+      alert('WARNING: The display sizes must be multiples of 8');
     }
+  };
+  onEnter = () => {
+    this.storage.focusedScreen = 'Settings';
   };
   connect = () => {
     setTimeout(() => {
@@ -67,7 +81,7 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
   render() {
     return (
       <SafeAreaView style={GlobalStyles.droidSafeArea}>
-        <NavigationEvents onWillBlur={this.onExit} />
+        <NavigationEvents onWillBlur={this.onExit} onWillFocus={this.onEnter} />
         <CommContextUpdater ref={this.contextRef} />
         <AppHeader title="Settings" navigation={this.props.navigation} />
 
@@ -84,6 +98,7 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
               label={'Billboard Width:'}
               updateValue={this.handleWidthChange}
               borderColor={'#b0b0b0'}
+              defaultValue={this.storage.width.toString()}
             />
             <View
               style={{ width: '100%', height: 20, backgroundColor: '#ebebeb' }}
@@ -96,6 +111,7 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
               label={'Billboard Height:'}
               updateValue={this.handleHeightChange}
               borderColor={'#b0b0b0'}
+              defaultValue={this.storage.height.toString()}
             />
             <View
               style={{ width: '100%', height: 20, backgroundColor: '#ebebeb' }}

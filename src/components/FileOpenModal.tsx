@@ -1,18 +1,7 @@
 import React from 'react';
-import {
-  View,
-  StyleSheet,
-  Modal,
-  Text,
-  Alert,
-  StatusBar,
-  SafeAreaView
-} from 'react-native';
+import { View, StyleSheet, Modal, Text, Alert, StatusBar } from 'react-native';
 import { CustomButton } from './CustomButton';
-import GlobalStyles, {
-  screenWidth,
-  screenHeight
-} from '../Screens/GlobalStyles';
+import { screenWidth, screenHeight } from '../Screens/GlobalStyles';
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 export interface ESPFiles {
   file: string;
@@ -160,6 +149,7 @@ class FileOpenModal extends React.Component<Props, State> {
               </Text>
             </View>
             <View style={{ flex: 1, alignItems: 'flex-end' }}>
+              <View style={{ flex: 1 }}></View>
               <CustomButton
                 width={60}
                 height={20}
@@ -175,47 +165,58 @@ class FileOpenModal extends React.Component<Props, State> {
               <View>
                 {this.props.fileList.map((value, index) => {
                   return (
-                    <TouchableOpacity
-                      key={index}
-                      style={{
-                        height: 50,
-                        width: screenWidth,
-                        backgroundColor:
-                          index === this.state.selected ? '#d3d3d3' : '#fff',
-                        borderColor: '#e3e3e3',
-                        borderBottomWidth: 1,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                      onPress={this.selectFile(index)}
-                    >
+                    <View key={index}>
+                      <TouchableOpacity
+                        style={{
+                          height: 50,
+                          width: screenWidth,
+                          backgroundColor:
+                            index === this.state.selected ? '#d3d3d3' : '#fff',
+                          borderColor: '#c0c0c0',
+                          borderBottomWidth: 1,
+                          borderTopWidth: 1,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        onPress={this.selectFile(index)}
+                      >
+                        <View
+                          style={{
+                            flex: 1,
+                            alignItems: 'flex-start',
+                            justifyContent: 'center',
+                            paddingLeft: 8
+                          }}
+                        >
+                          <Text style={{ fontWeight: 'bold' }}>
+                            {value.file}
+                          </Text>
+                        </View>
+                        <View
+                          style={{
+                            flex: 1,
+                            alignItems: 'flex-end',
+                            justifyContent: 'center',
+                            paddingRight: 8
+                          }}
+                        >
+                          <Text style={{ fontWeight: 'bold' }}>
+                            {' width: ' +
+                              value.width +
+                              ' height: ' +
+                              value.height}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
                       <View
                         style={{
-                          flex: 1,
-                          alignItems: 'flex-start',
-                          justifyContent: 'center',
-                          paddingLeft: 8
+                          width: '100%',
+                          height: 8,
+                          backgroundColor: 'transparent'
                         }}
-                      >
-                        <Text style={{ fontWeight: 'bold' }}>{value.file}</Text>
-                      </View>
-                      <View
-                        style={{
-                          flex: 1,
-                          alignItems: 'flex-end',
-                          justifyContent: 'center',
-                          paddingRight: 8
-                        }}
-                      >
-                        <Text style={{ fontWeight: 'bold' }}>
-                          {' width: ' +
-                            value.width +
-                            ' height: ' +
-                            value.height}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
+                      ></View>
+                    </View>
                   );
                 })}
               </View>

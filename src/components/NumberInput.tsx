@@ -5,6 +5,7 @@ import CustomIcon from './CustomIcon';
 interface Props {
   label: string;
   updateValue: (value: string) => void;
+  defaultValue?: string;
   icon?: string;
   iconColor?: string;
   isCustomIcon?: boolean;
@@ -40,8 +41,8 @@ class NumberInput extends React.PureComponent<Props, State> {
   constructor(props) {
     super(props);
     this.state = {
-      value: '1',
-      prevValue: '1',
+      value: this.props.defaultValue ? this.props.defaultValue : '1',
+      prevValue: this.props.defaultValue ? this.props.defaultValue : '1',
       backgroundColor: this.props.backgroundColor
         ? this.props.backgroundColor
         : '#fff'

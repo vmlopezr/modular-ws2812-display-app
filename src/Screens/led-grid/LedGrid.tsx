@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { View, ScrollView, StatusBar, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Text, ActivityIndicator } from 'react-native';
 import {
   NavigationParams,
   NavigationScreenProp,
@@ -29,6 +29,7 @@ interface State {
   showFileModal: boolean;
   showSaveModal: boolean;
   fileList: ESPFiles[];
+  openedFileName: string;
   // openFile: string;
 }
 class LedGrid extends React.PureComponent<Props, State> {
@@ -56,8 +57,9 @@ class LedGrid extends React.PureComponent<Props, State> {
       loading: false,
       showSaveModal: false,
       showFileModal: false,
-      NodeColor: 'rgb(100,100,100)',
-      fileList: []
+      NodeColor: '#646464',
+      fileList: [],
+      openedFileName: ''
     };
     this.width = this.storage.width;
     this.height = this.storage.height;
@@ -69,7 +71,7 @@ class LedGrid extends React.PureComponent<Props, State> {
     this.fileName = '';
   }
 
-  removeWhiteSpace(str: string) {
+  removeNewLine(str: string) {
     return str.replace(/(\r\n|\n|\r| )/g, '');
   }
 
@@ -81,6 +83,7 @@ class LedGrid extends React.PureComponent<Props, State> {
     this.setState({ NodeColor: color });
   };
   onEnter = () => {
+    this.storage.focusedScreen = 'LedGrid';
     if (
       this.state.width !== this.storage.width ||
       this.state.height !== this.storage.height
@@ -88,28 +91,46 @@ class LedGrid extends React.PureComponent<Props, State> {
       this.setState({
         width: this.storage.width,
         height: this.storage.height,
-        loading: true
+        loading: true,
+        openedFileName: ''
+      });
+    } else {
+      this.setState({
+        showFileModal: false,
+        showSaveModal: false,
+        openedFileName: ''
       });
     }
-  };
 
-  requestFileNames = (modal: string) => () => {
-    this.setState({ loading: true });
-    this.saveFile = modal === 'save' ? true : false;
-    this.openFile = modal === 'open' ? true : false;
+    this.fileName = '';
+    this.clearScreen();
     if (this.storage.ESPConn) {
+      this.setESPLiveInputState();
+    }
+  };
+  setESPLiveInputState = () => {
+    this.storage.socketInstance.send('LIVE');
+  };
+  onExit = () => {
+    if (this.storage.ESPConn) {
+      this.storage.socketInstance.send('STLI');
+    }
+  };
+  requestFileNames = (modal: string) => () => {
+    if (this.storage.ESPConn) {
+      this.setState({ loading: true });
+      this.saveFile = modal === 'save' ? true : false;
+      this.openFile = modal === 'open' ? true : false;
+
       this.storage.socketInstance.addEventListener(
         'message',
         this.obtainFileNames
       );
       this.storage.socketInstance.send('dirs');
     } else {
-      this.setState({
-        loading: false,
-        showFileModal: this.openFile,
-        showSaveModal: this.saveFile,
-        fileList: []
-      });
+      alert(
+        'Warning: You are not connected to the ESP32. Verify power and connection before opening/saving data.'
+      );
     }
   };
   obtainFileNames = (event: MessageEvent) => {
@@ -148,7 +169,7 @@ class LedGrid extends React.PureComponent<Props, State> {
     const values = data.split(' ');
     return {
       width: parseInt(values[0].substr(1, values[0].length - 1)),
-      height: parseInt(values[0].substr(1, values[1].length - 1))
+      height: parseInt(values[1].substr(1, values[1].length - 1))
     };
   };
   updateWidth = (width: number) => {
@@ -173,15 +194,21 @@ class LedGrid extends React.PureComponent<Props, State> {
 
       this.setState({
         loading: true,
-        showFileModal: false
+        showFileModal: false,
+        openedFileName: filename
       });
       this.startLoadingOnRead();
     } else {
       this.fileName = filename;
       this.setState({
-        showFileModal: false
+        showFileModal: false,
+        openedFileName: filename
       });
     }
+  };
+  getSavedFileName = (filename: string) => {
+    this.fileName = filename;
+    this.setState({ showSaveModal: false, openedFileName: filename });
   };
   startLoadingOnRead = () => {
     this.startReadingProcess();
@@ -190,6 +217,7 @@ class LedGrid extends React.PureComponent<Props, State> {
     this.dataRead = '';
     this.storage.socketInstance.addEventListener('message', this.receiveData);
     const message = 'read/' + this.fileName;
+    // const message = 'read/' + this.state.openedFileName;
     this.storage.socketInstance.send(message);
   };
 
@@ -199,22 +227,19 @@ class LedGrid extends React.PureComponent<Props, State> {
         'message',
         this.receiveData
       );
-      this.GridRef.current.processFileData(
-        this.removeWhiteSpace(this.dataRead)
-      );
+      this.GridRef.current.processFileData(this.removeNewLine(this.dataRead));
     } else {
       const data = event.data;
       this.dataRead = this.dataRead + data;
     }
   };
   gridData = (): string => {
-    return 'Testing';
+    return this.GridRef.current.sendGridData();
   };
   render() {
     return (
       <SafeAreaView style={GlobalStyles.droidSafeArea}>
-        {/* <StatusBar barStyle="light-content" /> */}
-        <NavigationEvents onDidFocus={this.onEnter} />
+        <NavigationEvents onDidFocus={this.onEnter} onWillBlur={this.onExit} />
         <AppHeader title="Billboard Draw" navigation={this.props.navigation} />
         <View style={styles.body} collapsable={false}>
           <View
@@ -222,9 +247,9 @@ class LedGrid extends React.PureComponent<Props, State> {
             style={{
               backgroundColor: 'white',
               borderBottomWidth: 1,
-              borderColor: '202020',
+              borderColor: '#202020',
               width: screenWidth,
-              height: screenWidth,
+              height: screenWidth - 50,
               alignItems: 'center',
               justifyContent: 'center'
             }}
@@ -236,6 +261,11 @@ class LedGrid extends React.PureComponent<Props, State> {
               height={this.state.height}
               NodeColor={this.state.NodeColor}
             />
+          </View>
+          <View style={styles.filenameDisplay}>
+            <Text style={{ fontSize: 15, paddingLeft: 8 }}>
+              {'Filename: ' + this.state.openedFileName}
+            </Text>
           </View>
           <ScrollView ref={this._scrollParentRef}>
             <View
@@ -322,6 +352,7 @@ class LedGrid extends React.PureComponent<Props, State> {
               />
               <SaveFileModal
                 ref={this.saveRef}
+                updateFileName={this.getSavedFileName}
                 showSaveModal={this.state.showSaveModal}
                 closeSaveModal={this.closeSaveModal}
                 fileList={this.state.fileList}

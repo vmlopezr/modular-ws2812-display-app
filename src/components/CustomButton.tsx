@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet, View } from 'react-native';
 interface Props {
   label: string;
   onPress: () => void;
@@ -17,7 +17,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderBottomWidth: 1
+    borderBottomWidth: 1,
+    flex: 1
   },
   label: {
     fontWeight: 'bold',
@@ -36,7 +37,7 @@ export const CustomButton = (props: Props) => {
   const fontSize = props.fontSize ? props.fontSize : 16;
   const backgroundColor = props.backgroundColor
     ? props.backgroundColor
-    : 'gray';
+    : 'transparent';
   const borderColor = props.borderColor ? props.borderColor : 'transparent';
   return (
     <TouchableOpacity

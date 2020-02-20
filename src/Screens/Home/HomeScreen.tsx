@@ -1,15 +1,9 @@
 import React from 'react';
-import {
-  View,
-  TextInput,
-  Text,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView
-} from 'react-native';
+import { View, SafeAreaView } from 'react-native';
 import styles from './HomeScreen.style.';
 import LocalStorage from '../../LocalStorage';
 import AppHeader from '../../components/AppHeader';
+import { screenWidth } from '../GlobalStyles';
 import {
   NavigationParams,
   NavigationScreenProp,
@@ -20,8 +14,6 @@ import { CustomButton } from '../../components/CustomButton';
 import { ScrollView } from 'react-native-gesture-handler';
 
 import GlobalStyles from '../GlobalStyles';
-import StringInput from '../../components/StringInput';
-import Loader from '../../components/Loader';
 interface Props {
   isFocused: boolean;
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
@@ -45,6 +37,16 @@ class HomeScreen extends React.Component<Props, State> {
     this.width = this.storage.width;
     this.height = this.storage.height;
   }
+  startLineAnimation = () => {
+    if (this.storage.ESPConn) {
+      this.storage.socketInstance.send('ANIM');
+    }
+  };
+  stopLineAnimation = () => {
+    if (this.storage.ESPConn) {
+      this.storage.socketInstance.send('STLI');
+    }
+  };
   render() {
     return (
       <SafeAreaView style={GlobalStyles.droidSafeArea}>
@@ -58,6 +60,40 @@ class HomeScreen extends React.Component<Props, State> {
                 backgroundColor: '#ebebeb'
               }}
             ></View>
+
+            <View
+              style={{
+                width: '100%',
+                height: 20,
+                backgroundColor: 'transparent'
+              }}
+            ></View>
+
+            <CustomButton
+              backgroundColor="#fff"
+              borderColor="#d3d3d3"
+              fontColor="#147EFB"
+              label={'Start Line Animation'}
+              width={screenWidth}
+              onPress={this.startLineAnimation}
+            />
+
+            <View
+              style={{
+                width: '100%',
+                height: 20,
+                backgroundColor: 'transparent'
+              }}
+            ></View>
+
+            <CustomButton
+              backgroundColor="#fff"
+              borderColor="#d3d3d3"
+              fontColor="#147EFB"
+              label={'Stop Line Animation'}
+              width={screenWidth}
+              onPress={this.stopLineAnimation}
+            />
           </ScrollView>
         </View>
       </SafeAreaView>

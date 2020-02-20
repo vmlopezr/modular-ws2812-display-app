@@ -26,7 +26,6 @@ export default class GridComponent extends React.Component<Props> {
   NodeRef = [];
   connectionRef: any;
   scrolling = true;
-  NodeColor: string;
   _scrollRefOuter: any;
   _scrollRefInner: any;
   _scroll: boolean;
@@ -58,8 +57,16 @@ export default class GridComponent extends React.Component<Props> {
     this.prevPosition = '';
     this.prevWidth = this.storage.width;
     this.prevHeight = this.storage.height;
-    this.NodeGrid = this.createNodeGrid(this.storage);
-    this.NodeRef = this.createRefGrid(this.storage);
+    // this.NodeGrid = this.createNodeGrid(this.storage);
+    // this.NodeRef = this.createRefGrid(this.storage);
+    this.NodeGrid = this.createNodeGrid({
+      width: this.props.width,
+      height: this.props.height
+    });
+    this.NodeRef = this.createRefGrid({
+      width: this.props.width,
+      height: this.props.height
+    });
     this._scrollRefInner = React.createRef();
     this._scrollRefOuter = React.createRef();
     this.finishedReading = false;
@@ -88,6 +95,7 @@ export default class GridComponent extends React.Component<Props> {
           if (this.prevPosition !== newposition) {
             if (newposition !== this.firstPosition) {
               this.NodeRef[yVal][xVal].current.handleTouch();
+              this.NodeGrid[yVal][xVal] = this.props.NodeColor;
             }
           }
           this.prevPosition = newposition;
@@ -117,6 +125,9 @@ export default class GridComponent extends React.Component<Props> {
           this.NodeRef[this.firstTouchY][
             this.firstTouchX
           ].current.handleTouch();
+          this.NodeGrid[this.firstTouchY][
+            this.firstTouchX
+          ] = this.props.NodeColor;
 
           this.longPressTimeout = setTimeout(() => {
             this._move = true;
@@ -266,6 +277,20 @@ export default class GridComponent extends React.Component<Props> {
     this.finishedReading = true;
     this.props.updateLoading(false);
   }
+  sendGridData(): string {
+    const height = this.props.height;
+    const width = this.props.width;
+    let data = '';
+    for (let i = 0; i < height; i++) {
+      let row = '';
+      for (let j = 0; j < width; j++) {
+        row = row + this.NodeGrid[i][j].slice(1, 7);
+      }
+      row = row + '\n';
+      data = data + row;
+    }
+    return data;
+  }
   async UpdatePage() {
     if (this.prevHeight !== this.props.height) {
       this.changeGridHeight(this.prevHeight, this.props.height);
@@ -326,7 +351,6 @@ export default class GridComponent extends React.Component<Props> {
                   <LedNode
                     ref={this.NodeRef[rowID][colID]}
                     key={ID}
-                    // color={this.sendColor}
                     color={this.sendColor}
                     onNodeUpdate={this.onNodeUpdate}
                     col={colID}

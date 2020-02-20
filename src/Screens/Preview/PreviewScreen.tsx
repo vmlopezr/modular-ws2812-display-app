@@ -5,12 +5,14 @@ import {
   NavigationParams,
   NavigationScreenProp,
   NavigationState,
-  SafeAreaView
+  SafeAreaView,
+  NavigationEvents
 } from 'react-navigation';
 import GlobalStyles from '../GlobalStyles';
 import ConnectionBadge from '../../components/connectionBadge';
 import { Ionicons } from '@expo/vector-icons';
 import AppHeader from '../../components/AppHeader';
+import LocalStorage from '../../LocalStorage';
 interface Props {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
 }
@@ -21,9 +23,11 @@ interface State {
 
 class PreviewScreen extends React.PureComponent<Props, State> {
   connectionRef: any;
+  storage: LocalStorage;
   constructor(props) {
     super(props);
     this.connectionRef = React.createRef();
+    this.storage = LocalStorage.getInstance();
     this.state = {
       isFocused: false,
       count: 0
@@ -39,9 +43,13 @@ class PreviewScreen extends React.PureComponent<Props, State> {
   onPress = () => {
     this.props.navigation.toggleDrawer();
   };
+  onEnter = () => {
+    this.storage.focusedScreen = 'Preview';
+  };
   render() {
     return (
       <SafeAreaView style={GlobalStyles.droidSafeArea}>
+        <NavigationEvents onWillFocus={this.onEnter} />
         {/* <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : null}
         style={{ flex: 1, width: '100%' }}
