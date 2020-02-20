@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#00000080'
   },
   modal: {
-    zIndex: 1,
+    zIndex: 2,
     alignItems: 'center',
     flexDirection: 'column',
     height: screenHeight,
@@ -37,6 +37,7 @@ const styles = StyleSheet.create({
   },
   modalBody: {
     flex: 1,
+    zIndex: 2,
     height: '100%',
     backgroundColor: '#ebebeb',
     width: '100%'
@@ -124,18 +125,20 @@ class FileOpenModal extends React.Component<Props, State> {
       <Modal
         transparent={true}
         visible={this.props.showFileModal}
-        animationType="slide"
+        animationType="none"
       >
-        <View style={styles.modal}>
+        <View collapsable={false} style={styles.modal}>
           <StatusBar barStyle="light-content" />
           <View style={styles.modalHeader}>
             <View
+              collapsable={false}
               style={{
                 flex: 1,
                 width: 50
               }}
             ></View>
             <View
+              collapsable={false}
               style={{
                 flex: 3,
                 justifyContent: 'center',
@@ -148,8 +151,11 @@ class FileOpenModal extends React.Component<Props, State> {
                 Open File
               </Text>
             </View>
-            <View style={{ flex: 1, alignItems: 'flex-end' }}>
-              <View style={{ flex: 1 }}></View>
+            <View
+              collapsable={false}
+              style={{ flex: 1, alignItems: 'flex-end' }}
+            >
+              <View collapsable={false} style={{ flex: 1 }}></View>
               <CustomButton
                 width={60}
                 height={20}
@@ -160,13 +166,22 @@ class FileOpenModal extends React.Component<Props, State> {
               />
             </View>
           </View>
-          <View style={styles.modalBody}>
+          <View style={styles.modalBody} collapsable={false}>
             <ScrollView>
-              <View>
+              <View collapsable={false}>
                 {this.props.fileList.map((value, index) => {
                   return (
                     <View key={index}>
-                      <TouchableOpacity
+                      <View
+                        collapsable={false}
+                        style={{
+                          width: '100%',
+                          height: 8,
+                          backgroundColor: 'transparent'
+                        }}
+                      ></View>
+                      {/* <TouchableOpacity */}
+                      <View
                         style={{
                           height: 50,
                           width: screenWidth,
@@ -179,9 +194,11 @@ class FileOpenModal extends React.Component<Props, State> {
                           alignItems: 'center',
                           justifyContent: 'center'
                         }}
-                        onPress={this.selectFile(index)}
+                        // onPress={this.selectFile(index)}
+                        onTouchEnd={this.selectFile(index)}
                       >
                         <View
+                          collapsable={false}
                           style={{
                             flex: 1,
                             alignItems: 'flex-start',
@@ -194,6 +211,7 @@ class FileOpenModal extends React.Component<Props, State> {
                           </Text>
                         </View>
                         <View
+                          collapsable={false}
                           style={{
                             flex: 1,
                             alignItems: 'flex-end',
@@ -208,14 +226,8 @@ class FileOpenModal extends React.Component<Props, State> {
                               value.height}
                           </Text>
                         </View>
-                      </TouchableOpacity>
-                      <View
-                        style={{
-                          width: '100%',
-                          height: 8,
-                          backgroundColor: 'transparent'
-                        }}
-                      ></View>
+                      </View>
+                      {/* </TouchableOpacity> */}
                     </View>
                   );
                 })}

@@ -262,7 +262,7 @@ class SaveFileModal extends React.Component<Props, State> {
       <Modal
         transparent={true}
         visible={this.props.showSaveModal}
-        animationType="slide"
+        animationType="none"
       >
         <View style={styles.modal}>
           <StatusBar barStyle="light-content" />
@@ -344,7 +344,8 @@ class SaveFileModal extends React.Component<Props, State> {
                 {this.props.fileList.map((value, index) => {
                   return (
                     <View key={index}>
-                      <TouchableOpacity
+                      {/* <TouchableOpacity */}
+                      <View
                         style={{
                           height: 50,
                           width: screenWidth,
@@ -356,7 +357,8 @@ class SaveFileModal extends React.Component<Props, State> {
                           alignItems: 'center',
                           justifyContent: 'center'
                         }}
-                        onPress={this.selectFile(index)}
+                        // onPress={this.selectFile(index)}
+                        onTouchEnd={this.selectFile(index)}
                       >
                         <View
                           style={{
@@ -385,7 +387,8 @@ class SaveFileModal extends React.Component<Props, State> {
                               value.height}
                           </Text>
                         </View>
-                      </TouchableOpacity>
+                        {/* </TouchableOpacity> */}
+                      </View>
                       <View
                         style={{
                           width: '100%',

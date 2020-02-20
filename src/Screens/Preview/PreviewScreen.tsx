@@ -75,8 +75,8 @@ class PreviewScreen extends React.PureComponent<Props, State> {
         </View> */}
         <AppHeader title="Preview" navigation={this.props.navigation} />
 
-        <View style={styles.body}>
-          <View>
+        <View style={styles.body} collapsable={false}>
+          <View collapsable={false}>
             <Text>{this.state.count}</Text>
           </View>
           <TouchableOpacity style={styles.button} onPress={this.updateCount}>

@@ -5,6 +5,7 @@ import LocalStorage from '../../LocalStorage';
 interface Props {
   col: number;
   row: number;
+  width: number;
   color(): string;
   onNodeUpdate(row: number, col: number, color: string);
 }
@@ -34,11 +35,14 @@ class LedNode extends React.Component<Props, State> {
   shouldComponentUpdate(nextProps, nextState): boolean {
     if (nextState.backgroundcolor !== this.state.backgroundcolor) {
       return true;
+    } else if (nextProps.width !== this.props.width) {
+      return true;
     } else {
       return false;
     }
   }
   handleTouch(): void {
+    console.log('row: ' + this.props.row + ' col: ' + this.props.col);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const currentcolor = this.props.color();
     let newcolor = '';
@@ -59,6 +63,7 @@ class LedNode extends React.Component<Props, State> {
     this.props.onNodeUpdate(this.props.row, this.props.col, '#000000');
   }
   render() {
+    const value = this.props.col + this.props.row * this.props.width;
     return (
       <View
         collapsable={false}
@@ -72,9 +77,7 @@ class LedNode extends React.Component<Props, State> {
           }
         ]}
       >
-        <Text style={{ color: 'white' }}>
-          {this.props.row * this.storage.width + this.props.col}
-        </Text>
+        <Text style={{ color: 'white' }}>{value}</Text>
       </View>
     );
   }

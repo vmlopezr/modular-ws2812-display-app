@@ -250,7 +250,7 @@ export default class GridComponent extends React.Component<Props> {
       this.changedGridSize = true;
       setTimeout(() => {
         this.startUpdateProcess();
-      }, 10);
+      }, 30);
 
       return true;
     } else if (this.changedGridSize) {
@@ -308,6 +308,7 @@ export default class GridComponent extends React.Component<Props> {
   }
   render() {
     const width = this.prevWidth * 25;
+    const height = this.prevHeight * 25;
     let ID = '';
     return (
       <ScrollView
@@ -339,8 +340,10 @@ export default class GridComponent extends React.Component<Props> {
             style={{
               alignItems: 'center',
               justifyContent: 'center',
+              // flexDirection: 'column-reverse',
               flexDirection: 'row',
               width: width,
+              height: height,
               flexWrap: 'wrap'
             }}
           >
@@ -355,6 +358,7 @@ export default class GridComponent extends React.Component<Props> {
                     onNodeUpdate={this.onNodeUpdate}
                     col={colID}
                     row={rowID}
+                    width={this.props.width}
                   />
                 );
               });
