@@ -2,13 +2,20 @@ import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import LocalStorage from '../../LocalStorage';
-interface Props {
-  col: number;
-  row: number;
-  width: number;
-  color(): string;
-  onNodeUpdate(row: number, col: number, color: string);
+
+interface Color {
+  NodeColor: string;
+  LedColor: string;
 }
+interface Props {
+  index?: number;
+  col?: number;
+  row?: number;
+  width?: number;
+  color(): Color;
+  onNodeUpdate(index: number, color: string);
+}
+
 interface State {
   backgroundcolor: string;
 }
@@ -29,7 +36,7 @@ class LedNode extends React.Component<Props, State> {
     super(props);
     this.storage = LocalStorage.getInstance();
     this.state = {
-      backgroundcolor: '#000000'
+      backgroundcolor: '#0F0000'
     };
   }
   shouldComponentUpdate(nextProps, nextState): boolean {
@@ -42,28 +49,27 @@ class LedNode extends React.Component<Props, State> {
     }
   }
   handleTouch(): void {
-    console.log('row: ' + this.props.row + ' col: ' + this.props.col);
+    // console.log('row: ' + this.props.row + ' col: ' + this.props.col);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const currentcolor = this.props.color();
     let newcolor = '';
-    if (this.state.backgroundcolor === currentcolor) {
+    if (this.state.backgroundcolor === currentcolor.NodeColor) {
       this.setState({ backgroundcolor: '#000000' });
       newcolor = '#000000';
     } else {
-      this.setState({ backgroundcolor: currentcolor });
-      newcolor = currentcolor;
+      this.setState({ backgroundcolor: currentcolor.NodeColor });
+      newcolor = currentcolor.LedColor;
     }
-    this.props.onNodeUpdate(this.props.row, this.props.col, newcolor);
+    this.props.onNodeUpdate(this.props.index, newcolor);
+    // return newcolor;
   }
   updateColor(color: string) {
     this.setState({ backgroundcolor: color });
   }
   resetColor(): void {
     this.setState({ backgroundcolor: '#000000' });
-    this.props.onNodeUpdate(this.props.row, this.props.col, '#000000');
   }
   render() {
-    const value = this.props.col + this.props.row * this.props.width;
     return (
       <View
         collapsable={false}
@@ -76,9 +82,7 @@ class LedNode extends React.Component<Props, State> {
             alignItems: 'center'
           }
         ]}
-      >
-        <Text style={{ color: 'white' }}>{value}</Text>
-      </View>
+      ></View>
     );
   }
 }

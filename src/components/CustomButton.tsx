@@ -9,6 +9,7 @@ interface Props {
   fontColor?: string;
   fontSize?: number;
   borderColor?: string;
+  disable?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -35,24 +36,28 @@ export const CustomButton = (props: Props) => {
   const height = props.height ? props.height : 45;
   const fontColor = props.fontColor ? props.fontColor : 'black';
   const fontSize = props.fontSize ? props.fontSize : 16;
+  const borderColor = props.borderColor ? props.borderColor : 'transparent';
   const backgroundColor = props.backgroundColor
     ? props.backgroundColor
     : 'transparent';
-  const borderColor = props.borderColor ? props.borderColor : 'transparent';
+  const disabled = props.disable ? props.disable : false;
+  const disabledBackgroundColor = disabled ? '#cccccc' : backgroundColor;
+  const disabledFontColor = disabled ? '#666666' : fontColor;
   return (
     <TouchableOpacity
       style={[
         styles.button,
         {
-          backgroundColor: backgroundColor,
+          backgroundColor: disabledBackgroundColor,
           borderColor: borderColor,
           width: width,
           height: height
         }
       ]}
       onPress={onPress(props)}
+      disabled={disabled}
     >
-      <Text style={[styles.label, { color: fontColor, fontSize }]}>
+      <Text style={[styles.label, { color: disabledFontColor, fontSize }]}>
         {props.label}
       </Text>
     </TouchableOpacity>

@@ -25,6 +25,7 @@ interface State {
   width: number;
   height: number;
   NodeColor: string;
+  LedColor: string;
   loading: boolean;
   showFileModal: boolean;
   showSaveModal: boolean;
@@ -58,6 +59,7 @@ class LedGrid extends React.PureComponent<Props, State> {
       showSaveModal: false,
       showFileModal: false,
       NodeColor: '#646464',
+      LedColor: '#000000',
       fileList: [],
       openedFileName: ''
     };
@@ -70,7 +72,11 @@ class LedGrid extends React.PureComponent<Props, State> {
     this.GridRef = React.createRef();
     this.fileName = '';
   }
-
+  componentDidMount() {
+    if (this.storage.ESPConn) {
+      this.setESPLiveInputState();
+    }
+  }
   removeNewLine(str: string) {
     return str.replace(/(\r\n|\n|\r| )/g, '');
   }
@@ -78,9 +84,9 @@ class LedGrid extends React.PureComponent<Props, State> {
   clearScreen = () => {
     this.GridRef.current.clearScreen();
   };
-  onColorChange = (color: string) => {
+  onColorChange = (Nodecolor: string, LedColor: string) => {
     // console.log('setting color');
-    this.setState({ NodeColor: color });
+    this.setState({ NodeColor: Nodecolor, LedColor: LedColor });
   };
   onEnter = () => {
     this.storage.focusedScreen = 'LedGrid';
@@ -104,16 +110,18 @@ class LedGrid extends React.PureComponent<Props, State> {
 
     this.fileName = '';
     this.clearScreen();
-    if (this.storage.ESPConn) {
-      this.setESPLiveInputState();
-    }
+    setTimeout(() => {
+      if (this.storage.ESPConn) {
+        this.setESPLiveInputState();
+      }
+    }, 200);
   };
   setESPLiveInputState = () => {
     this.storage.socketInstance.send('LIVE');
   };
   onExit = () => {
     if (this.storage.ESPConn) {
-      this.storage.socketInstance.send('STLI');
+      this.storage.socketInstance.send('EXLI');
     }
   };
   requestFileNames = (modal: string) => () => {
@@ -188,6 +196,9 @@ class LedGrid extends React.PureComponent<Props, State> {
   closeSaveModal = () => {
     this.setState({ showSaveModal: false });
   };
+  closeFileOpenModal = () => {
+    this.setState({ showFileModal: false });
+  };
   updateFileName = (filename: string) => {
     if (filename.length > 0) {
       this.fileName = filename;
@@ -254,13 +265,16 @@ class LedGrid extends React.PureComponent<Props, State> {
               justifyContent: 'center'
             }}
           >
-            <GridComponent
-              ref={this.GridRef}
-              updateLoading={this.updateLoading}
-              width={this.state.width}
-              height={this.state.height}
-              NodeColor={this.state.NodeColor}
-            />
+            <View pointerEvents="box-none">
+              <GridComponent
+                ref={this.GridRef}
+                updateLoading={this.updateLoading}
+                width={this.state.width}
+                height={this.state.height}
+                NodeColor={this.state.NodeColor}
+                LedColor={this.state.LedColor}
+              />
+            </View>
           </View>
           <View style={styles.filenameDisplay}>
             <Text style={{ fontSize: 15, paddingLeft: 8 }}>
@@ -349,6 +363,7 @@ class LedGrid extends React.PureComponent<Props, State> {
                 width={this.state.width}
                 height={this.state.height}
                 fileList={this.state.fileList}
+                closeOpenModal={this.closeFileOpenModal}
               />
               <SaveFileModal
                 ref={this.saveRef}

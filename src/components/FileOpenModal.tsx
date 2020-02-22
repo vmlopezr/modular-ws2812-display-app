@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
 });
 interface Props {
   updateFileName(data: string): void;
+  closeOpenModal(): void;
   showFileModal: boolean;
   fileList: ESPFiles[];
   width: number;
@@ -130,13 +131,19 @@ class FileOpenModal extends React.Component<Props, State> {
         <View collapsable={false} style={styles.modal}>
           <StatusBar barStyle="light-content" />
           <View style={styles.modalHeader}>
-            <View
-              collapsable={false}
-              style={{
-                flex: 1,
-                width: 50
-              }}
-            ></View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flex: 1 }}></View>
+
+              <CustomButton
+                width={60}
+                height={20}
+                backgroundColor="transparent"
+                label="Exit"
+                fontColor="#fff"
+                fontSize={18}
+                onPress={this.props.closeOpenModal}
+              />
+            </View>
             <View
               collapsable={false}
               style={{
@@ -151,11 +158,8 @@ class FileOpenModal extends React.Component<Props, State> {
                 Open File
               </Text>
             </View>
-            <View
-              collapsable={false}
-              style={{ flex: 1, alignItems: 'flex-end' }}
-            >
-              <View collapsable={false} style={{ flex: 1 }}></View>
+            <View style={{ flex: 1, alignContent: 'flex-end' }}>
+              <View style={{ flex: 1 }}></View>
               <CustomButton
                 width={60}
                 height={20}

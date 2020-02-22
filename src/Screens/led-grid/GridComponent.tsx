@@ -4,17 +4,21 @@ import {
   View,
   ScrollView,
   PanResponderInstance,
-  PanResponder
+  PanResponder,
+  GestureResponderEvent
 } from 'react-native';
 import LedNode from './LedNode';
 import * as Haptics from 'expo-haptics';
 import LocalStorage from '../../LocalStorage';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import { screenWidth } from '../GlobalStyles';
 
 interface Props {
   updateLoading?(loading: boolean): void;
   width: number;
   height: number;
   NodeColor: string;
+  LedColor: string;
 }
 type Size = {
   width: number;
@@ -22,8 +26,8 @@ type Size = {
 };
 export default class GridComponent extends React.Component<Props> {
   storage: LocalStorage;
-  NodeGrid = [];
-  NodeRef = [];
+  NodeGrid: string[];
+  NodeRef: React.RefObject<LedNode>[];
   connectionRef: any;
   scrolling = true;
   _scrollRefOuter: any;
@@ -33,6 +37,7 @@ export default class GridComponent extends React.Component<Props> {
   shortDelay: number;
   shortPressTimeout: NodeJS.Timeout;
   _move: boolean;
+  _touch: boolean;
   firstTouchX: number;
   firstTouchY: number;
   firstPosition: string;
@@ -41,6 +46,7 @@ export default class GridComponent extends React.Component<Props> {
   prevHeight: number;
   changedGridSize: boolean;
   finishedReading: boolean;
+  liveIndex: number;
 
   _panResponder: PanResponderInstance;
 
@@ -52,13 +58,12 @@ export default class GridComponent extends React.Component<Props> {
     };
     this.changedGridSize = false;
     this._move = false;
+    this._touch = false;
     this.firstPosition = '';
     this.shortDelay = 60;
     this.prevPosition = '';
     this.prevWidth = this.storage.width;
     this.prevHeight = this.storage.height;
-    // this.NodeGrid = this.createNodeGrid(this.storage);
-    // this.NodeRef = this.createRefGrid(this.storage);
     this.NodeGrid = this.createNodeGrid({
       width: this.props.width,
       height: this.props.height
@@ -70,71 +75,100 @@ export default class GridComponent extends React.Component<Props> {
     this._scrollRefInner = React.createRef();
     this._scrollRefOuter = React.createRef();
     this.finishedReading = false;
+    this.liveIndex = 0;
     this._panResponder = PanResponder.create({
       onMoveShouldSetPanResponder: () => true,
 
       onPanResponderMove: event => {
-        if (this._move) {
-          clearTimeout(this.shortPressTimeout);
-          clearTimeout(this.longPressTimeout);
-          let xVal = Math.floor(event.nativeEvent.locationX / 25);
-          let yVal = Math.floor(event.nativeEvent.locationY / 25);
+        if (
+          !(
+            (this.props.height == 8 &&
+              this.props.width == 8 &&
+              (event.nativeEvent.pageY <= 157 ||
+                event.nativeEvent.pageY >= 353 ||
+                event.nativeEvent.pageX <= 107 ||
+                event.nativeEvent.pageX >= 303)) ||
+            (this.props.height == 8 &&
+              (event.nativeEvent.pageY <= 157 ||
+                event.nativeEvent.pageY >= 353)) ||
+            (this.props.width == 8 &&
+              (event.nativeEvent.pageX <= 107 ||
+                event.nativeEvent.pageX >= 303))
+          )
+        ) {
+          if (event.nativeEvent.pageY > 75 && event.nativeEvent.pageY < 435) {
+            if (this._move) {
+              clearTimeout(this.shortPressTimeout);
+              clearTimeout(this.longPressTimeout);
+              let xVal = Math.floor(event.nativeEvent.locationX / 25);
+              let yVal =
+                this.props.height -
+                1 -
+                Math.floor(event.nativeEvent.locationY / 25);
 
-          if (xVal >= this.props.width) {
-            xVal = this.props.width - 1;
-          } else if (xVal < 0) {
-            xVal = 0;
-          }
-          if (yVal >= this.props.height) {
-            yVal = this.props.height - 1;
-          } else if (yVal < 0) {
-            yVal = 0;
-          }
-          const newposition = xVal.toString() + ',' + yVal.toString();
+              if (xVal >= this.props.width) {
+                xVal = this.props.width - 1;
+              } else if (xVal < 0) {
+                xVal = 0;
+              }
+              if (yVal >= this.props.height) {
+                yVal = this.props.height - 1;
+              } else if (yVal < 0) {
+                yVal = 0;
+              }
+              const newposition = xVal.toString() + ',' + yVal.toString();
 
-          if (this.prevPosition !== newposition) {
-            if (newposition !== this.firstPosition) {
-              this.NodeRef[yVal][xVal].current.handleTouch();
-              this.NodeGrid[yVal][xVal] = this.props.NodeColor;
+              if (this.prevPosition !== newposition) {
+                if (newposition !== this.firstPosition) {
+                  const index = yVal + this.props.height * xVal;
+                  this.liveIndex = this.getDisplayIndex(xVal, yVal);
+                  this.NodeRef[index].current.handleTouch();
+                }
+              }
+              this.prevPosition = newposition;
             }
           }
-          this.prevPosition = newposition;
         }
       },
       onStartShouldSetPanResponder: () => true,
 
       onPanResponderStart: event => {
-        this.firstTouchX = Math.floor(event.nativeEvent.locationX / 25);
-        this.firstTouchY = Math.floor(event.nativeEvent.locationY / 25);
+        if (event.nativeEvent.touches.length === 1) {
+          this.firstTouchY =
+            this.props.height -
+            1 -
+            Math.floor(event.nativeEvent.locationY / 25);
+          this.firstTouchX = Math.floor(event.nativeEvent.locationX / 25);
+          const index = this.firstTouchY + this.props.height * this.firstTouchX;
+          if (this.firstTouchX >= this.props.width) {
+            this.firstTouchX = this.props.width - 1;
+          } else if (this.firstTouchX < 0) {
+            this.firstTouchX = 0;
+          }
+          if (this.firstTouchY >= this.props.height) {
+            this.firstTouchY = this.props.height - 1;
+          } else if (this.firstTouchY < 0) {
+            this.firstTouchY = 0;
+          }
 
-        if (this.firstTouchX >= this.props.width) {
-          this.firstTouchX = this.props.width - 1;
-        } else if (this.firstTouchX < 0) {
-          this.firstTouchX = 0;
+          this.firstPosition =
+            this.firstTouchX.toString() + ',' + this.firstTouchY.toString();
+
+          this.shortPressTimeout = setTimeout(() => {
+            // this._touch = true;
+            this.liveIndex = this.getDisplayIndex(
+              this.firstTouchX,
+              this.firstTouchY
+            );
+            this.NodeRef[index].current.handleTouch();
+
+            this.longPressTimeout = setTimeout(() => {
+              this._move = true;
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+              this.setScrolls(false);
+            }, 300);
+          }, this.shortDelay);
         }
-        if (this.firstTouchY >= this.props.height) {
-          this.firstTouchY = this.props.height - 1;
-        } else if (this.firstTouchY < 0) {
-          this.firstTouchY = 0;
-        }
-
-        this.firstPosition =
-          this.firstTouchX.toString() + ',' + this.firstTouchY.toString();
-
-        this.shortPressTimeout = setTimeout(() => {
-          this.NodeRef[this.firstTouchY][
-            this.firstTouchX
-          ].current.handleTouch();
-          this.NodeGrid[this.firstTouchY][
-            this.firstTouchX
-          ] = this.props.NodeColor;
-
-          this.longPressTimeout = setTimeout(() => {
-            this._move = true;
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-            this.setScrolls(false);
-          }, 300);
-        }, this.shortDelay);
       },
       onPanResponderTerminationRequest: () => true,
       onShouldBlockNativeResponder: () => false,
@@ -152,12 +186,30 @@ export default class GridComponent extends React.Component<Props> {
       }
     });
   }
+  liveInput = (color: string) => {
+    if (this.storage.ESPConn) {
+      const data = 'INPT' + this.liveIndex + ' ' + color.slice(1, 7);
+      this.storage.socketInstance.send(data);
+    }
+  };
+  getDisplayIndex = (x, y) => {
+    return (
+      8 * (x % 8) +
+      (y % 8) +
+      64 * Math.floor(x / 8) +
+      this.props.width * 8 * Math.floor(y / 8)
+    );
+  };
   setScrolls(scroll: boolean) {
     this._scrollRefInner.current.setNativeProps({ scrollEnabled: scroll });
     this._scrollRefOuter.current.setNativeProps({ scrollEnabled: scroll });
   }
-  onNodeUpdate = (row: number, col: number, color: string) => {
-    this.NodeGrid[row][col] = color;
+
+  onNodeUpdate = (index: number, color: string) => {
+    this.NodeGrid[index] = color;
+    setTimeout(() => {
+      this.liveInput(color);
+    }, 80);
   };
   onLongPress(value: boolean): void {
     this.scrolling = value;
@@ -167,81 +219,49 @@ export default class GridComponent extends React.Component<Props> {
   }
 
   sendColor = () => {
-    return this.props.NodeColor;
+    return { NodeColor: this.props.NodeColor, LedColor: this.props.LedColor };
   };
-  changeGridWidth(prevwidth, newwidth) {
-    const height = this.prevHeight;
-    if (newwidth < prevwidth) {
-      let i = 0;
-      for (i = 0; i < height; i++) {
-        this.NodeGrid[i].splice(newwidth, prevwidth - newwidth);
-        this.NodeRef[i].splice(newwidth, prevwidth - newwidth);
-      }
+
+  updateGridLength(height, width) {
+    const newlength = height * width;
+    const oldlength = this.prevHeight * this.prevWidth;
+
+    if (newlength < oldlength) {
+      this.NodeGrid.splice(newlength, oldlength - newlength);
+      this.NodeRef.splice(newlength, oldlength - newlength);
     } else {
-      let i = 0;
-      let j = 0;
-      for (i = 0; i < height; i++) {
-        for (j = prevwidth; j < newwidth; j++) {
-          this.NodeGrid[i].push('#000000');
-          this.NodeRef[i].push(React.createRef());
-        }
-      }
-    }
-  }
-  changeGridHeight(height, newheight) {
-    const width = this.prevWidth;
-    if (newheight < height) {
-      this.NodeGrid.splice(newheight, height - newheight);
-      this.NodeRef.splice(newheight, height - newheight);
-    } else {
-      for (let row = height; row < newheight; row++) {
-        const newRow = [];
-        const newRefRow = [];
-        for (let col = 0; col < width; col++) {
-          newRow.push('#000000');
-          newRefRow.push(React.createRef());
-        }
-        this.NodeGrid.push(newRow);
-        this.NodeRef.push(newRefRow);
+      for (let index = oldlength; index < newlength; index++) {
+        this.NodeRef.push(React.createRef());
+        this.NodeGrid.push('#000000');
       }
     }
   }
   createNodeGrid(size: Size) {
     const grid = [];
-    const height = size.height;
-    const width = size.width;
-    for (let row = 0; row < height; row++) {
-      const currentRow = [];
-      for (let col = 0; col < width; col++) {
-        currentRow.push('#000000');
-      }
-      grid.push(currentRow);
+    const length = size.width * size.height;
+    for (let object = 0; object < length; object++) {
+      grid.push('#000000');
     }
     return grid;
   }
-
-  clearScreen = () => {
-    this.NodeRef.map(row => {
-      row.map(Node => {
-        Node.current.resetColor();
-      });
-    });
-  };
 
   createRefGrid(size: Size) {
     const grid = [];
-    const height = size.height;
-    const width = size.width;
-
-    for (let row = 0; row < height; row++) {
-      const currentRow = [];
-      for (let col = 0; col < width; col++) {
-        currentRow.push(React.createRef());
-      }
-      grid.push(currentRow);
+    const length = size.width * size.height;
+    for (let object = 0; object < length; object++) {
+      grid.push(React.createRef());
     }
     return grid;
   }
+  clearScreen = () => {
+    this.NodeRef.map((node: React.RefObject<LedNode>) => {
+      node.current.resetColor();
+    });
+    this.NodeGrid.fill('#000000', 0, this.NodeGrid.length);
+    if (this.storage.ESPConn) {
+      this.storage.socketInstance.send('CLRI');
+    }
+  };
   shouldComponentUpdate(nextProps) {
     if (
       nextProps.width !== this.props.width ||
@@ -263,15 +283,54 @@ export default class GridComponent extends React.Component<Props> {
 
     return false;
   }
+  convertValue(value: string): string {
+    const number = parseInt(value, 16);
+
+    if (!number) {
+      return '00';
+    } else {
+      return ('0' + Math.round((55 * number) / 254 + 200).toString(16)).slice(
+        -2
+      );
+    }
+  }
   processFileData(data: string) {
     const height = this.props.height;
     const width = this.props.width;
-    for (let i = 0; i < height; i++) {
-      for (let j = 0; j < width; j++) {
-        const color =
-          '#' + data.slice((width * i + j) * 6, (width * i + j + 1) * 6);
-        this.NodeGrid[i][j] = color;
-        this.NodeRef[i][j].current.updateColor(color);
+    const subheight = height / 8;
+    const subwidth = width / 8;
+
+    if (height > 8) {
+      let count = 0;
+      for (let i = 0; i < subheight; i++) {
+        for (let j = 0; j < subwidth; j++) {
+          for (let z = 0; z < 8; z++) {
+            for (let c = 0; c < 8; c++) {
+              const index = height * z + c + width * j * 8 + 8 * i;
+              const color = '#' + data.slice(count * 6, (count + 1) * 6);
+              this.NodeGrid[index] = color;
+              this.NodeRef[index].current.updateColor(
+                '#' +
+                  this.convertValue(color.slice(1, 3)) +
+                  this.convertValue(color.slice(3, 5)) +
+                  this.convertValue(color.slice(5, 7))
+              );
+              count++;
+            }
+          }
+        }
+      }
+    } else {
+      let color = '';
+      for (let i = 0; i < height * width; i++) {
+        color = '#' + data.slice(i * 6, (i + 1) * 6);
+        const newcolor =
+          '#' +
+          this.convertValue(color.slice(1, 3)) +
+          this.convertValue(color.slice(3, 5)) +
+          this.convertValue(color.slice(5, 7));
+        this.NodeGrid[i] = color;
+        this.NodeRef[i].current.updateColor(newcolor);
       }
     }
     this.finishedReading = true;
@@ -280,24 +339,41 @@ export default class GridComponent extends React.Component<Props> {
   sendGridData(): string {
     const height = this.props.height;
     const width = this.props.width;
+    const subheight = height / 8;
+    const subwidth = width / 8;
+
     let data = '';
-    for (let i = 0; i < height; i++) {
-      let row = '';
-      for (let j = 0; j < width; j++) {
-        row = row + this.NodeGrid[i][j].slice(1, 7);
+    let index = 0;
+    if (height > 8) {
+      for (let i = 0; i < subheight; i++) {
+        for (let j = 0; j < subwidth; j++) {
+          for (let z = 0; z < 8; z++) {
+            for (let c = 0; c < 8; c++) {
+              index = height * z + c + width * j * 8 + 8 * i;
+              data = data + this.NodeGrid[index].slice(1, 7);
+              // data = data + ' ' + index;
+            }
+            data = data + '\n';
+          }
+        }
       }
-      row = row + '\n';
-      data = data + row;
+    } else {
+      this.NodeGrid.map((value, index) => {
+        if (index % 8 === 0 && index > 0) {
+          data = data + '\n';
+        }
+        data = data + value.slice(1, 7);
+      });
     }
     return data;
   }
   async UpdatePage() {
-    if (this.prevHeight !== this.props.height) {
-      this.changeGridHeight(this.prevHeight, this.props.height);
+    if (
+      this.prevHeight !== this.props.height ||
+      this.prevWidth !== this.props.width
+    ) {
+      this.updateGridLength(this.props.height, this.props.width);
       this.prevHeight = this.props.height;
-    }
-    if (this.prevWidth !== this.props.width) {
-      this.changeGridWidth(this.prevWidth, this.props.width);
       this.prevWidth = this.props.width;
     }
   }
@@ -307,15 +383,14 @@ export default class GridComponent extends React.Component<Props> {
     this.props.updateLoading(false);
   }
   render() {
-    const width = this.prevWidth * 25;
-    const height = this.prevHeight * 25;
-    let ID = '';
     return (
       <ScrollView
         ref={this._scrollRefOuter}
         overScrollMode={'auto'}
         nestedScrollEnabled={true}
         scrollEnabled={this._scroll}
+        maximumZoomScale={1.0}
+        minimumZoomScale={0.25}
         contentContainerStyle={{
           flexGrow: 1,
           alignItems: 'center',
@@ -323,6 +398,8 @@ export default class GridComponent extends React.Component<Props> {
         }}
       >
         <ScrollView
+          maximumZoomScale={1.0}
+          minimumZoomScale={0.25}
           ref={this._scrollRefInner}
           overScrollMode={'auto'}
           nestedScrollEnabled={true}
@@ -340,28 +417,23 @@ export default class GridComponent extends React.Component<Props> {
             style={{
               alignItems: 'center',
               justifyContent: 'center',
-              // flexDirection: 'column-reverse',
-              flexDirection: 'row',
-              width: width,
-              height: height,
+              flexDirection: 'column-reverse',
+              width: this.props.width * 25,
+              height: this.props.height * 25,
               flexWrap: 'wrap'
             }}
           >
-            {this.NodeGrid.map((row, rowID) => {
-              return row.map((col: any, colID: number) => {
-                ID = rowID.toString() + ',' + colID.toString();
-                return (
-                  <LedNode
-                    ref={this.NodeRef[rowID][colID]}
-                    key={ID}
-                    color={this.sendColor}
-                    onNodeUpdate={this.onNodeUpdate}
-                    col={colID}
-                    row={rowID}
-                    width={this.props.width}
-                  />
-                );
-              });
+            {this.NodeRef.map((nodeRef, index) => {
+              return (
+                <LedNode
+                  ref={nodeRef}
+                  key={index}
+                  color={this.sendColor}
+                  onNodeUpdate={this.onNodeUpdate}
+                  index={index}
+                  width={this.props.width}
+                />
+              );
             })}
           </View>
         </ScrollView>

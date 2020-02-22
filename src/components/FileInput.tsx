@@ -6,6 +6,7 @@ interface Props {
   defaultValue?: string;
   label: string;
   updateValue(value: string): void;
+  deSelect(): void;
   icon?: string;
   iconColor?: string;
   isCustomIcon?: boolean;
@@ -118,6 +119,7 @@ class FileInput extends React.PureComponent<Props, State> {
               borderColor: '#d3d3d3',
               fontSize: 15
             }}
+            onFocus={this.props.deSelect}
             value={this.state.value}
             returnKeyType="default"
             onChangeText={this.onChange}

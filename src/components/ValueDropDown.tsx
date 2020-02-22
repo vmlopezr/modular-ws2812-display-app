@@ -47,6 +47,7 @@ class ValueDropDown extends React.PureComponent<Props, State> {
       backgroundColor: 'rgba(255,255,255,1)'
     };
     this.scrollRef = React.createRef();
+    this.props.updateValue(this.props.data[0]);
   }
   scrollFix(e) {
     let verticalY = 0;

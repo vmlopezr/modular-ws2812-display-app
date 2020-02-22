@@ -51,51 +51,7 @@ class HomeScreen extends React.Component<Props, State> {
     return (
       <SafeAreaView style={GlobalStyles.droidSafeArea}>
         <AppHeader title="Home" navigation={this.props.navigation} />
-        <View style={styles.body}>
-          <ScrollView>
-            <View
-              style={{
-                width: '100%',
-                height: 20,
-                backgroundColor: '#ebebeb'
-              }}
-            ></View>
-
-            <View
-              style={{
-                width: '100%',
-                height: 20,
-                backgroundColor: 'transparent'
-              }}
-            ></View>
-
-            <CustomButton
-              backgroundColor="#fff"
-              borderColor="#d3d3d3"
-              fontColor="#147EFB"
-              label={'Start Line Animation'}
-              width={screenWidth}
-              onPress={this.startLineAnimation}
-            />
-
-            <View
-              style={{
-                width: '100%',
-                height: 20,
-                backgroundColor: 'transparent'
-              }}
-            ></View>
-
-            <CustomButton
-              backgroundColor="#fff"
-              borderColor="#d3d3d3"
-              fontColor="#147EFB"
-              label={'Stop Line Animation'}
-              width={screenWidth}
-              onPress={this.stopLineAnimation}
-            />
-          </ScrollView>
-        </View>
+        <View style={styles.body}></View>
       </SafeAreaView>
     );
   }

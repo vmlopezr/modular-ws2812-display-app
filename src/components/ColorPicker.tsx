@@ -5,7 +5,7 @@ import { CustomButton } from './CustomButton';
 import { screenWidth, screenHeight } from '../Screens/GlobalStyles';
 
 interface Props {
-  onColorChange(color): void;
+  onColorChange(Nodecolor, LedColor): void;
   clearScreen(): void;
   initialState: {
     R: number;
@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
 });
 class ColorPicker extends React.Component<Props, State> {
   NodeColor: string;
+  LedColor: string;
   screenWidth: number;
 
   constructor(props) {
@@ -89,6 +90,8 @@ class ColorPicker extends React.Component<Props, State> {
     };
     this.NodeColor = '#fff';
     this.screenWidth = Math.round(Dimensions.get('window').width);
+    this.updateNodeColor();
+    this.props.onColorChange(this.NodeColor, this.LedColor);
   }
   updateRValue = (value: number) => {
     this.setState({ RValue: value });
@@ -102,12 +105,25 @@ class ColorPicker extends React.Component<Props, State> {
   toHex(value: number): string {
     return ('0' + value.toString(16)).slice(-2);
   }
+  convertValue(value: number): number {
+    if (!value) {
+      return 0;
+    } else {
+      return Math.round((55 * value) / 254 + 200);
+    }
+  }
   updateNodeColor(): void {
-    this.NodeColor =
+    this.LedColor =
       '#' +
       this.toHex(this.state.RValue) +
       this.toHex(this.state.GValue) +
       this.toHex(this.state.BValue);
+
+    this.NodeColor =
+      '#' +
+      this.toHex(this.convertValue(this.state.RValue)) +
+      this.toHex(this.convertValue(this.state.GValue)) +
+      this.toHex(this.convertValue(this.state.BValue));
   }
   setModalVisibility = (isVisible: boolean) => () => {
     this.setState({ modalVisible: isVisible });
@@ -116,7 +132,7 @@ class ColorPicker extends React.Component<Props, State> {
     this.setState({ modalVisible: true });
   };
   closeModal = () => {
-    this.props.onColorChange(this.NodeColor);
+    this.props.onColorChange(this.NodeColor, this.LedColor);
     this.setState({ modalVisible: false });
   };
 

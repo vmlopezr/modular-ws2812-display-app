@@ -123,6 +123,9 @@ class SaveFileModal extends React.Component<Props, State> {
       this.setState({ selected: index });
     }
   };
+  deSelectFile = () => {
+    this.setState({ selected: -1 });
+  };
   getColor = (index: number): string => {
     return index === this.state.selected ? '#d3d3d3' : '#fff';
   };
@@ -151,7 +154,6 @@ class SaveFileModal extends React.Component<Props, State> {
 
     const filename = this.getFileName();
     const BUFFERSIZE = 14000;
-    // const BUFFERSIZE = 70;
     const fileheader =
       'save/' +
       filename +
@@ -191,7 +193,6 @@ class SaveFileModal extends React.Component<Props, State> {
       if (this.verifyFilename(this.fileName)) {
         this.setState({ loading: true });
         setTimeout(() => {
-          // this.gridData = this.props.gridData();
           this.writeData();
         }, 10);
       }
@@ -312,6 +313,7 @@ class SaveFileModal extends React.Component<Props, State> {
                 icon="ios-document"
                 iconColor="grey"
                 iconSize={30}
+                deSelect={this.deSelectFile}
                 borderColor={'transparent'}
               />
             </View>

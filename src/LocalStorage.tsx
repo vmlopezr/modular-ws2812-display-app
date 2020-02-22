@@ -30,8 +30,8 @@ export default class LocalStorage {
     }
   }
   connectToServer(): void {
-    // this.socketInstance = new WebSocket('ws://192.168.4.1/');
-    this.socketInstance = new WebSocket('ws://192.168.1.71/');
+    this.socketInstance = new WebSocket('ws://192.168.4.1/');
+    // this.socketInstance = new WebSocket('ws://192.168.1.71/');
     // this.socketInstance = new WebSocket('ws://192.168.137.88/');
   }
 }
