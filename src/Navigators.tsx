@@ -13,8 +13,8 @@ import LedGrid from './Screens/led-grid/LedGrid';
 import { createAppContainer } from 'react-navigation';
 import { Dimensions } from 'react-native';
 import SideMenu from './Screens/SideMenu';
-import EffectsScreen from './Screens/Effects/EffectsScreen';
-import PreviewScreen from './Screens/Preview/PreviewScreen';
+import AnimationScreen from './Screens/Animations/AnimationScreen';
+import DefaultScreen from './Screens/Default/DefaultScreen';
 
 const defaultScreen = 'Type';
 export type tabBarIconType = {
@@ -76,8 +76,8 @@ const MainNavigator = createDrawerNavigator(
   {
     Settings: Settings,
     Dashboard: DashboardTab,
-    Effects: EffectsScreen,
-    Preview: PreviewScreen
+    Animations: AnimationScreen,
+    Default: DefaultScreen
   },
 
   {

@@ -9,3 +9,4 @@ export default StyleSheet.create({
     flex: 26
   }
 });
+export const MatrixType = ['CJMCU-64', 'WS-2812-8x8'];

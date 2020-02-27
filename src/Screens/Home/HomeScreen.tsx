@@ -47,11 +47,72 @@ class HomeScreen extends React.Component<Props, State> {
       this.storage.socketInstance.send('STLI');
     }
   };
+  goToSettings = () => {
+    this.props.navigation.navigate('Settings');
+  };
+  goToAnimations = () => {
+    this.props.navigation.navigate('Animations');
+  };
+  goToDefaultDisplay = () => {
+    this.props.navigation.navigate('Default');
+  };
   render() {
     return (
       <SafeAreaView style={GlobalStyles.droidSafeArea}>
         <AppHeader title="Home" navigation={this.props.navigation} />
-        <View style={styles.body}></View>
+        <View style={styles.body}>
+          <ScrollView>
+            <View
+              style={{
+                width: '100%',
+                height: 20,
+                backgroundColor: 'transparent'
+              }}
+            ></View>
+
+            <CustomButton
+              backgroundColor="#fff"
+              borderColor="#d3d3d3"
+              fontColor="#147EFB"
+              label={'Animations'}
+              width={screenWidth}
+              onPress={this.goToAnimations}
+            />
+
+            <View
+              style={{
+                width: '100%',
+                height: 20,
+                backgroundColor: 'transparent'
+              }}
+            ></View>
+
+            <CustomButton
+              backgroundColor="#fff"
+              borderColor="#d3d3d3"
+              fontColor="#147EFB"
+              label={'Set Display'}
+              width={screenWidth}
+              onPress={this.goToDefaultDisplay}
+            />
+            <View
+              style={{
+                width: '100%',
+                height: 20,
+                backgroundColor: 'transparent'
+              }}
+            ></View>
+
+            <CustomButton
+              backgroundColor="#fff"
+              borderColor="#d3d3d3"
+              fontColor="#147EFB"
+              label={'Settings'}
+              width={screenWidth}
+              onPress={this.goToSettings}
+            />
+          </ScrollView>
+        </View>
       </SafeAreaView>
     );
   }

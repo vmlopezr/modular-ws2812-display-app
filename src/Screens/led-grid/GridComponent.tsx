@@ -193,12 +193,23 @@ export default class GridComponent extends React.Component<Props> {
     }
   };
   getDisplayIndex = (x, y) => {
-    return (
-      8 * (x % 8) +
-      (y % 8) +
-      64 * Math.floor(x / 8) +
-      this.props.width * 8 * Math.floor(y / 8)
-    );
+    const isCJMCU = this.storage.MatrixType === 'CJMCU-64' ? true : false;
+
+    if (!isCJMCU && x % 2 === 1) {
+      return (
+        8 * (x % 8) +
+        (7 - (y % 8)) +
+        64 * Math.floor(x / 8) +
+        this.props.width * 8 * Math.floor(y / 8)
+      );
+    } else {
+      return (
+        8 * (x % 8) +
+        (y % 8) +
+        64 * Math.floor(x / 8) +
+        this.props.width * 8 * Math.floor(y / 8)
+      );
+    }
   };
   setScrolls(scroll: boolean) {
     this._scrollRefInner.current.setNativeProps({ scrollEnabled: scroll });
@@ -207,9 +218,7 @@ export default class GridComponent extends React.Component<Props> {
 
   onNodeUpdate = (index: number, color: string) => {
     this.NodeGrid[index] = color;
-    setTimeout(() => {
-      this.liveInput(color);
-    }, 80);
+    this.liveInput(color);
   };
   onLongPress(value: boolean): void {
     this.scrolling = value;

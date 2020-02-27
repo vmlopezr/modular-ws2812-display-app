@@ -63,12 +63,6 @@ class MessageScreen extends React.PureComponent<Props, State> {
       <SafeAreaView style={GlobalStyles.droidSafeArea}>
         <StatusBar barStyle="light-content" />
         <NavigationEvents onDidFocus={this.onEnter} />
-        {/* <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : null}
-        style={{ flex: 1, width: '100%' }}
-        enabled={true}
-        keyboardVerticalOffset={100}
-      > */}
         <AppHeader
           title="Billboard Typing"
           navigation={this.props.navigation}
@@ -108,7 +102,7 @@ class MessageScreen extends React.PureComponent<Props, State> {
                 style={{
                   width: '100%',
                   height: 20,
-                  backgroundColor: '#ebebeb'
+                  backgroundColor: 'transparent'
                 }}
               ></View>
               <ValueDropDown

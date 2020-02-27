@@ -8,13 +8,14 @@ import {
   NavigationEvents,
   SafeAreaView
 } from 'react-navigation';
-import styles from './Settings.style';
+import styles, { MatrixType } from './Settings.style';
 import NumberInput from '../../components/NumberInput';
 import { ScrollView } from 'react-native-gesture-handler';
 import { CustomButton } from '../../components/CustomButton';
 import CommContextUpdater from '../../components/CommContextUpdater';
 import GlobalStyles from '../GlobalStyles';
 import AppHeader from '../../components/AppHeader';
+import ValueDropDown from '../../components/ValueDropDown';
 interface Prop {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
 }
@@ -60,12 +61,18 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
           this.storage.socketInstance.send(data);
         }
       }
+      if (this.storage.ESPConn) {
+        this.storage.socketInstance.send('TYPE' + this.storage.MatrixType);
+      }
     } else {
       this.props.navigation.toggleDrawer();
       this.props.navigation.navigate('Settings');
 
       alert('WARNING: The display sizes must be multiples of 8');
     }
+  };
+  handleMatrixTypechange = (matrixType: string) => {
+    this.storage.setMatrixType(matrixType);
   };
   onEnter = () => {
     this.storage.focusedScreen = 'Settings';
@@ -88,7 +95,11 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
         <View style={styles.body}>
           <ScrollView>
             <View
-              style={{ width: '100%', height: 20, backgroundColor: '#ebebeb' }}
+              style={{
+                width: '100%',
+                height: 20,
+                backgroundColor: 'transparent'
+              }}
             ></View>
             <NumberInput
               isCustomIcon={true}
@@ -101,7 +112,11 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
               defaultValue={this.storage.width.toString()}
             />
             <View
-              style={{ width: '100%', height: 20, backgroundColor: '#ebebeb' }}
+              style={{
+                width: '100%',
+                height: 20,
+                backgroundColor: 'transparent'
+              }}
             ></View>
             <NumberInput
               icon={'grid-height2'}
@@ -114,7 +129,28 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
               defaultValue={this.storage.height.toString()}
             />
             <View
-              style={{ width: '100%', height: 20, backgroundColor: '#ebebeb' }}
+              style={{
+                width: '100%',
+                height: 20,
+                backgroundColor: 'transparent'
+              }}
+            ></View>
+
+            <ValueDropDown
+              label="Matrix Type:"
+              icon="md-apps"
+              data={MatrixType}
+              iconSize={50}
+              leftPadding={22}
+              rightPadding={4}
+              updateValue={this.handleMatrixTypechange}
+            />
+            <View
+              style={{
+                width: '100%',
+                height: 20,
+                backgroundColor: 'transparent'
+              }}
             ></View>
             <CustomButton
               backgroundColor="#fff"

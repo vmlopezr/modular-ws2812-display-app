@@ -23,6 +23,9 @@ interface Props {
   iconColor?: string;
   isCustomIcon?: boolean;
   iconSize?: number;
+  leftPadding?: number;
+  defaultValue?: string;
+  rightPadding?: number;
 }
 interface State {
   valueIndex: number;
@@ -40,14 +43,18 @@ class ValueDropDown extends React.PureComponent<Props, State> {
 
   constructor(props) {
     super(props);
+    const { defaultValue } = this.props;
+    const defaultIndex = defaultValue
+      ? this.props.data.indexOf(defaultValue)
+      : 0;
     this.prevIndex = 0;
     this.state = {
-      valueIndex: 0,
+      valueIndex: defaultIndex,
       modalVisible: false,
       backgroundColor: 'rgba(255,255,255,1)'
     };
     this.scrollRef = React.createRef();
-    this.props.updateValue(this.props.data[0]);
+    this.props.updateValue(this.props.data[this.state.valueIndex]);
   }
   scrollFix(e) {
     let verticalY = 0;
@@ -153,18 +160,36 @@ class ValueDropDown extends React.PureComponent<Props, State> {
     }
   };
   placeIcon = () => {
-    const color = this.props.iconColor ? this.props.iconColor : 'gray';
-    const size = this.props.iconSize ? this.props.iconSize : 30;
+    const { iconColor, iconSize, leftPadding, rightPadding } = this.props;
+    const colorProp = iconColor ? iconColor : 'gray';
+    const sizeProp = iconSize ? iconSize : 30;
+    const leftPaddingProp = leftPadding ? leftPadding : 15;
+    const rightPaddingProp = rightPadding ? rightPadding : 5;
+
     if (this.props.isCustomIcon) {
       return (
-        <View style={{ paddingLeft: 15 }}>
-          <CustomIcon name={this.props.icon} size={size} color={color} />
+        <View
+          style={{
+            paddingLeft: leftPaddingProp,
+            paddingRight: rightPaddingProp
+          }}
+        >
+          <CustomIcon
+            name={this.props.icon}
+            size={sizeProp}
+            color={colorProp}
+          />
         </View>
       );
     } else {
       return (
-        <View style={{ paddingLeft: 15 }}>
-          <Ionicons name={this.props.icon} size={size} color={color} />
+        <View
+          style={{
+            paddingLeft: leftPaddingProp,
+            paddingRight: rightPaddingProp
+          }}
+        >
+          <Ionicons name={this.props.icon} size={sizeProp} color={colorProp} />
         </View>
       );
     }
@@ -175,34 +200,104 @@ class ValueDropDown extends React.PureComponent<Props, State> {
         (event.nativeEvent.locationY - 65) / pickerItemHeight
       );
       this.scrollToIndex(index);
+      this.setState({
+        valueIndex: index
+      });
+      this.props.updateValue(this.props.data[index]);
     }
+  };
+  renderHeader = () => {
+    return (
+      <View style={styles.modalHeader}>
+        <View style={{ flex: 4 }}></View>
+        <View style={{ flex: 1 }}>
+          <CustomButton
+            width={60}
+            backgroundColor="transparent"
+            label="Done"
+            fontColor="#147EFB"
+            onPress={this.setModalVisibility(false)}
+          />
+        </View>
+      </View>
+    );
+  };
+  renderDropdownButton = () => {
+    return (
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: this.state.backgroundColor }
+        ]}
+        onTouchEnd={this.scrollToState}
+        onTouchStart={this.updateOpacity}
+      >
+        {this.props.icon && this.placeIcon()}
+        <Text style={[styles.text, { textAlign: 'left', paddingLeft: 8 }]}>
+          {this.props.label}
+        </Text>
+        <Text style={[styles.text, { textAlign: 'right', paddingRight: 30 }]}>
+          {this.props.data[this.state.valueIndex]}
+        </Text>
+        <Ionicons
+          size={30}
+          name={'ios-arrow-down'}
+          color={'black'}
+          style={{ paddingTop: 5, paddingRight: 20 }}
+        />
+      </View>
+    );
+  };
+  renderScrollArea = () => {
+    return (
+      <View style={styles.pickerScrollArea}>
+        <ScrollView
+          ref={this.scrollRef}
+          showsVerticalScrollIndicator={false}
+          onMomentumScrollEnd={this.onMomentumScrollEnd}
+          onMomentumScrollBegin={this.onMomentumScrollBegin}
+          onScrollBeginDrag={this.onScrollBeginDrag}
+          onScrollEndDrag={this.onScrollEndDrag}
+          onTouchEnd={this.onTouch}
+        >
+          <View style={styles.scrollTopFiller} pointerEvents="none"></View>
+
+          {this.props.data.map((value, ID) => (
+            <View key={ID} style={styles.pickerItem} pointerEvents="none">
+              <Text style={styles.pickerText}>{value}</Text>
+            </View>
+          ))}
+
+          <View style={styles.scrollBottomFiller} pointerEvents="none"></View>
+        </ScrollView>
+
+        <LinearGradient
+          style={{
+            position: 'absolute',
+            top: 0,
+            width: '100%',
+            height: 65
+          }}
+          colors={['rgba(255, 255, 255, 1.0)', 'rgba(240, 240, 240, 0.6)']}
+          pointerEvents={'none'}
+        />
+        <LinearGradient
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            width: '100%',
+            height: 145
+          }}
+          colors={['rgba(245, 245, 245, 0.6)', 'rgba(255, 255, 255, 1.0)']}
+          pointerEvents={'none'}
+        />
+      </View>
+    );
   };
   render() {
     return (
       <View style={styles.parentContainer}>
-        <View
-          style={[
-            styles.container,
-            { backgroundColor: this.state.backgroundColor }
-          ]}
-          onTouchEnd={this.scrollToState}
-          onTouchStart={this.updateOpacity}
-        >
-          {this.props.icon && this.placeIcon()}
-          <Text style={[styles.text, { textAlign: 'left', paddingLeft: 8 }]}>
-            {this.props.label}
-          </Text>
-          <Text style={[styles.text, { textAlign: 'right', paddingRight: 30 }]}>
-            {this.props.data[this.state.valueIndex]}
-          </Text>
-          <Ionicons
-            size={30}
-            name={'ios-arrow-down'}
-            color={'black'}
-            style={{ paddingTop: 5, paddingRight: 20 }}
-          />
-        </View>
-
+        {this.renderDropdownButton()}
         <Modal
           transparent={true}
           visible={this.state.modalVisible}
@@ -214,68 +309,8 @@ class ValueDropDown extends React.PureComponent<Props, State> {
           ></View>
           <View style={styles.modal}>
             <View style={styles.valueSelector}></View>
-
-            <View style={styles.modalHeader}>
-              <CustomButton
-                width={60}
-                backgroundColor="transparent"
-                label="Done"
-                fontColor="#147EFB"
-                onPress={this.setModalVisibility(false)}
-              />
-            </View>
-            <View style={styles.pickerScrollArea}>
-              <ScrollView
-                ref={this.scrollRef}
-                showsVerticalScrollIndicator={false}
-                onMomentumScrollEnd={this.onMomentumScrollEnd}
-                onMomentumScrollBegin={this.onMomentumScrollBegin}
-                onScrollBeginDrag={this.onScrollBeginDrag}
-                onScrollEndDrag={this.onScrollEndDrag}
-                onTouchEnd={this.onTouch}
-              >
-                <View
-                  style={styles.scrollTopFiller}
-                  pointerEvents="none"
-                ></View>
-                {this.props.data.map((value, ID) => (
-                  <View key={ID} style={styles.pickerItem} pointerEvents="none">
-                    <Text style={styles.pickerText}>{value}</Text>
-                  </View>
-                ))}
-                <View
-                  style={styles.scrollBottomFiller}
-                  pointerEvents="none"
-                ></View>
-              </ScrollView>
-              <LinearGradient
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  width: '100%',
-                  height: 65
-                }}
-                colors={[
-                  'rgba(255, 255, 255, 1.0)',
-                  'rgba(240, 240, 240, 0.6)'
-                ]}
-                pointerEvents={'none'}
-              />
-
-              <LinearGradient
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  width: '100%',
-                  height: 145
-                }}
-                colors={[
-                  'rgba(245, 245, 245, 0.6)',
-                  'rgba(255, 255, 255, 1.0)'
-                ]}
-                pointerEvents={'none'}
-              />
-            </View>
+            {this.renderHeader()}
+            {this.renderScrollArea()}
           </View>
         </Modal>
       </View>

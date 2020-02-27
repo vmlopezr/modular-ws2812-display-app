@@ -5,11 +5,13 @@ export default class LocalStorage {
   width: number;
   height: number;
   focusedScreen: string;
+  MatrixType: string;
   constructor() {
     this.ESPConn = false;
     this.width = 8;
     this.height = 8;
     this.focusedScreen = 'Settings';
+    this.MatrixType = 'CJMCU-64';
   }
 
   static getInstance(): LocalStorage {
@@ -24,14 +26,17 @@ export default class LocalStorage {
   setHeight(height: number) {
     this.height = height;
   }
+  setMatrixType(matrixType: string) {
+    this.MatrixType = matrixType;
+  }
   close(): void {
     if (this.ESPConn) {
       this.socketInstance.close();
     }
   }
   connectToServer(): void {
-    this.socketInstance = new WebSocket('ws://192.168.4.1/');
+    // this.socketInstance = new WebSocket('ws://192.168.4.1/');
     // this.socketInstance = new WebSocket('ws://192.168.1.71/');
-    // this.socketInstance = new WebSocket('ws://192.168.137.88/');
+    this.socketInstance = new WebSocket('ws://172.25.45.204/');
   }
 }

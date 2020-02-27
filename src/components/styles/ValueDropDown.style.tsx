@@ -66,15 +66,14 @@ export default StyleSheet.create({
     width: screenWidth
   },
   modalHeader: {
+    flexDirection: 'row',
     height: 50,
     width: '100%',
     borderColor: '#525252',
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    flexDirection: 'row'
+    justifyContent: 'center',
+    backgroundColor: 'white'
   },
   pickerItem: {
     height: pickerItemHeight,

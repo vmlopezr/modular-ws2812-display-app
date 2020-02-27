@@ -12,6 +12,8 @@ interface Props {
   iconSize?: number;
   borderColor?: string;
   backgroundColor?: string;
+  leftPadding?: number;
+  rightPadding?: number;
 }
 interface State {
   prevValue: string;
@@ -81,18 +83,39 @@ class NumberInput extends React.PureComponent<Props, State> {
     );
   };
   placeIcon = () => {
-    const color = this.props.iconColor ? this.props.iconColor : 'gray';
-    const size = this.props.iconSize ? this.props.iconSize : 30;
-    if (this.props.isCustomIcon) {
+    const {
+      color,
+      iconSize,
+      rightPadding,
+      leftPadding,
+      iconColor,
+      icon,
+      isCustomIcon
+    } = this.props;
+    const colorProp = iconColor ? iconColor : 'gray';
+    const sizeProp = iconSize ? iconSize : 30;
+    const leftPaddingProp = leftPadding ? leftPadding : 15;
+    const rightPaddingProp = rightPadding ? rightPadding : 5;
+    if (isCustomIcon) {
       return (
-        <View style={{ paddingLeft: 15 }}>
-          <CustomIcon name={this.props.icon} size={size} color={color} />
+        <View
+          style={{
+            paddingLeft: leftPaddingProp,
+            paddingRight: rightPaddingProp
+          }}
+        >
+          <CustomIcon name={icon} size={sizeProp} color={colorProp} />
         </View>
       );
     } else {
       return (
-        <View style={{ paddingLeft: 15 }}>
-          <Ionicons name={this.props.icon} size={size} color={color} />
+        <View
+          style={{
+            paddingLeft: leftPaddingProp,
+            paddingRight: rightPaddingProp
+          }}
+        >
+          <Ionicons name={icon} size={sizeProp} color={colorProp} />
         </View>
       );
     }

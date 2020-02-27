@@ -80,20 +80,21 @@ class SideMenu extends React.PureComponent<Props> {
           <View style={styles.divider}></View>
           <SideMenuHeading
             navigation={this.props.navigation}
-            label="Set Effects"
-            route="Effects"
+            label="View Animation"
+            route="Animations"
             activeRoute={activeRoute}
             navigateTo={this.navigateToScreen}
             icon="ios-color-wand"
           />
           <SideMenuHeading
             navigation={this.props.navigation}
-            label="Preview Screens"
-            route="Preview"
+            label="Set Display"
+            route="Default"
             activeRoute={activeRoute}
             navigateTo={this.navigateToScreen}
             icon="ios-desktop"
           />
+          <View style={styles.divider}></View>
           <SideMenuHeading
             navigation={this.props.navigation}
             label="Settings"

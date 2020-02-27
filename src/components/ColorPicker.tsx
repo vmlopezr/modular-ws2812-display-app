@@ -109,7 +109,7 @@ class ColorPicker extends React.Component<Props, State> {
     if (!value) {
       return 0;
     } else {
-      return Math.round((55 * value) / 254 + 200);
+      return Math.round((100 * value) / 150 + 155);
     }
   }
   updateNodeColor(): void {
@@ -175,7 +175,7 @@ class ColorPicker extends React.Component<Props, State> {
                 width={150}
                 value={this.state.RValue}
                 step={1}
-                maximumValue={255}
+                maximumValue={150}
                 minimumValue={0}
                 onValueChange={this.updateRValue}
               />
@@ -185,7 +185,7 @@ class ColorPicker extends React.Component<Props, State> {
                 width={150}
                 value={this.state.GValue}
                 step={1}
-                maximumValue={255}
+                maximumValue={150}
                 minimumValue={0}
                 onValueChange={this.updateGValue}
               />
@@ -194,7 +194,7 @@ class ColorPicker extends React.Component<Props, State> {
                 width={150}
                 value={this.state.BValue}
                 step={1}
-                maximumValue={255}
+                maximumValue={150}
                 minimumValue={0}
                 onValueChange={this.updateBValue}
               />

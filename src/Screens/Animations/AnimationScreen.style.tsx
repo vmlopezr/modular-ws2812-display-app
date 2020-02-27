@@ -6,7 +6,7 @@ export default StyleSheet.create({
     color: 'white'
   },
   body: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#ebebeb',
     flex: 26
   },
   button: {
@@ -21,3 +21,4 @@ export default StyleSheet.create({
     borderColor: '#fff'
   }
 });
+export const animations = ['Single Pixel', 'Horizontal Line', 'Vertical Line'];

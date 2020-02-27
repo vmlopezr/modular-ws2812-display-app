@@ -6,7 +6,7 @@ export default StyleSheet.create({
     color: 'white'
   },
   body: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ebebeb',
     flex: 26
   }
 });

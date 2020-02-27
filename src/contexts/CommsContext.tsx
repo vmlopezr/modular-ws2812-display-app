@@ -36,12 +36,19 @@ class CommsContextProvider extends React.PureComponent<{}, CommsState> {
         console.log('connection opened');
         this.storage.ESPConn = true;
         this.setState({ ESPConn: true });
+        //
         if (this.storage.ESPConn) {
           const data = 'size' + this.storage.height + ' ' + this.storage.width;
+          // Update Size data on the ESP32
           this.storage.socketInstance.send(data);
+
+          // Set ESP32 State Maching to Live Input State
           if (this.storage.focusedScreen === 'LedGrid') {
             this.storage.socketInstance.send('LIVE');
           }
+
+          // Update Matrix Type on ESP32
+          this.storage.socketInstance.send('TYPE' + this.storage.MatrixType);
         }
       });
       this.storage.socketInstance.addEventListener('error', () => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import styles, { effects } from './EffectsScreen.style';
+import styles, { animations } from './AnimationScreen.style';
 import {
   NavigationParams,
   NavigationScreenProp,
@@ -24,7 +24,7 @@ interface State {
   stopButtonDisabled: boolean;
 }
 
-class EffectsScreen extends React.PureComponent<Props, State> {
+class AnimationScreen extends React.PureComponent<Props, State> {
   connectionRef: any;
   storage: LocalStorage;
   displayEffect: string;
@@ -88,7 +88,7 @@ class EffectsScreen extends React.PureComponent<Props, State> {
   render() {
     return (
       <SafeAreaView style={GlobalStyles.droidSafeArea}>
-        <AppHeader title="Effects" navigation={this.props.navigation} />
+        <AppHeader title="Animations" navigation={this.props.navigation} />
         <NavigationEvents onWillFocus={this.onEnter} onWillBlur={this.onExit} />
         <View style={styles.body}>
           <ScrollView>
@@ -102,7 +102,7 @@ class EffectsScreen extends React.PureComponent<Props, State> {
             <ValueDropDown
               label="Animation:"
               icon="ios-star-half"
-              data={effects}
+              data={animations}
               iconSize={30}
               updateValue={this.handleEffectchange}
             />
@@ -148,4 +148,4 @@ class EffectsScreen extends React.PureComponent<Props, State> {
     );
   }
 }
-export default EffectsScreen;
+export default AnimationScreen;
