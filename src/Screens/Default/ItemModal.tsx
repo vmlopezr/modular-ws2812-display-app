@@ -1,11 +1,5 @@
 import React, { PureComponent } from 'react';
-import {
-  View,
-  StyleSheet,
-  Modal,
-  ScrollView,
-  KeyboardAvoidingView
-} from 'react-native';
+import { View, StyleSheet, Modal, ScrollView } from 'react-native';
 import { CustomButton } from '../../components/CustomButton';
 import { screenWidth, screenHeight } from '../../Screens/GlobalStyles';
 import ValueDropDown from '../../components/ValueDropDown';
@@ -24,7 +18,6 @@ const styles = StyleSheet.create({
   },
   modal: {
     position: 'absolute',
-    top: '60%',
     left: 0,
     zIndex: 1,
     alignItems: 'center',
@@ -47,7 +40,7 @@ const styles = StyleSheet.create({
   modalBody: {
     flex: 1,
     height: modalHeight - 50,
-    backgroundColor: 'transparent',
+    backgroundColor: '#ececf1',
     width: '100%'
   },
   spacer: {
@@ -66,6 +59,7 @@ interface Props {
   defaultEffect: string;
   defaultDisplayTime: string;
   modalVisible: boolean;
+  keyboardSpace: number;
 }
 interface State {
   Effect: string;
@@ -126,6 +120,7 @@ class ItemModal extends PureComponent<Props, State> {
         leftPadding={17}
         rightPadding={4}
         borderColor="#8f8f8f"
+        allowZero={true}
       />
       <View style={styles.spacer}></View>
       <NumberInput
@@ -138,28 +133,35 @@ class ItemModal extends PureComponent<Props, State> {
         leftPadding={17}
         rightPadding={4}
         borderColor="#8f8f8f"
+        allowZero={true}
       />
     </ScrollView>
   );
 
   render() {
     return (
-      <KeyboardAvoidingView behavior="padding" enabled>
-        <Modal
-          transparent={true}
-          visible={this.props.modalVisible}
-          animationType="fade"
+      <Modal
+        transparent={true}
+        visible={this.props.modalVisible}
+        animationType="fade"
+      >
+        <View
+          style={styles.modalTransparentBackground}
+          onTouchEnd={this.closeModal}
+        ></View>
+        <View
+          style={[
+            styles.modal,
+
+            {
+              top: this.props.keyboardSpace
+            }
+          ]}
         >
-          <View
-            style={styles.modalTransparentBackground}
-            onTouchEnd={this.closeModal}
-          ></View>
-          <View style={styles.modal}>
-            {this.renderHeader()}
-            {this.renderBody()}
-          </View>
-        </Modal>
-      </KeyboardAvoidingView>
+          {this.renderHeader()}
+          {this.renderBody()}
+        </View>
+      </Modal>
     );
   }
 }

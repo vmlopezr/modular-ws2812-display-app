@@ -1,5 +1,11 @@
 import React from 'react';
-import { View } from 'react-native';
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  Keyboard,
+  Platform
+} from 'react-native';
 import styles from './DefaultScreen.style';
 import { CustomButton } from '../../components/CustomButton';
 import {
@@ -9,141 +15,426 @@ import {
   SafeAreaView,
   NavigationEvents
 } from 'react-navigation';
-import GlobalStyles, { screenWidth } from '../GlobalStyles';
+import GlobalStyles, { screenHeight } from '../GlobalStyles';
 import AppHeader from '../../components/AppHeader';
 import LocalStorage from '../../LocalStorage';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import FrameItem from './FrameItem';
+import DefaultFileModal, { ESPFiles } from './DefaultFileModal';
 interface Props {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
 }
 interface State {
-  list: ListItem[];
+  list: string[];
   selectButton: boolean;
+  loading: boolean;
+  showFileModal: boolean;
+  ESPFileList: ESPFiles[];
+  keyboardSpace: number;
 }
-interface ListItem {
-  key: string;
-  label: number;
-  backgroundColor;
+interface FrameEffects {
+  FileName: string;
+  Effect: string;
+  Delay: string;
+  displayTime: string;
+  image: string;
 }
-
+// TODO: Replace the object list in state. Use this.state.size to rerender the list
+// The draggable list will render this.array, instead of this.state.list
 class DefaultScreen extends React.PureComponent<Props, State> {
   storage: LocalStorage;
-  count: number;
-  _scrollRef: React.RefObject<DraggableFlatList<ListItem>>;
+  _scrollRef: React.RefObject<DraggableFlatList<string>>;
   itemSelected: number;
-  array: ListItem[];
-  selectedItems: number[];
+  effectData: FrameEffects[];
+  selectedItems: string[];
+  fileName: string[];
+  fileindex: number;
+  dataRead: string;
+  onEnterRead: boolean;
+  frameData: string;
   constructor(props) {
     super(props);
-    this.count = 1;
     this.storage = LocalStorage.getInstance();
     this._scrollRef = React.createRef();
     this.selectedItems = [];
-    this.array = [
-      {
-        key: `item-${0}`, // For example only -- don't use index as your key!
-        label: 0,
-        backgroundColor: `rgb(${Math.floor(Math.random() * 255)}, ${0 *
-          5}, ${132})`
-      },
-      {
-        key: `item-${1}`, // For example only -- don't use index as your key!
-        label: 1,
-        backgroundColor: `rgb(${Math.floor(Math.random() * 255)}, ${Math.floor(
-          Math.random() * 255
-        )}, ${132})`
-      }
-    ];
+    this.dataRead = '';
+    this.effectData = [];
+    this.fileName = [];
+    this.fileindex = 0;
+    this.frameData = '';
+    this.onEnterRead = false;
     this.state = {
-      list: this.array,
-      selectButton: false
+      list: [],
+      selectButton: false,
+      loading: false,
+      showFileModal: false,
+      ESPFileList: [],
+      keyboardSpace: screenHeight * 0.6
     };
+    if (Platform.OS === 'android') {
+      Keyboard.addListener('keyboardDidHide', this.keyboardHide);
+      Keyboard.addListener('keyboardDidShow', this.keyboardShow);
+    } else {
+      Keyboard.addListener('keyboardWillHide', this.keyboardHide);
+      Keyboard.addListener('keyboardWillShow', this.keyboardShow);
+    }
   }
-
-  onEnter = () => {
-    this.storage.focusedScreen = 'Preview';
+  keyboardShow = event => {
+    const top = event.endCoordinates.height;
+    this.updateModalPosition(screenHeight * 0.6 - top);
   };
-  addItem = () => {
+  keyboardHide = () => {
+    this.updateModalPosition(screenHeight * 0.6);
+  };
+  componentWillUnmount() {
+    if (Platform.OS === 'android') {
+      Keyboard.removeAllListeners('keyboardDidHide');
+      Keyboard.removeAllListeners('keyboardDidShow');
+    } else {
+      Keyboard.removeAllListeners('keyboardWillHide');
+      Keyboard.removeAllListeners('keyboardWillShow');
+    }
+  }
+  updateModalPosition = (styleTop: number) => {
+    this.setState({ keyboardSpace: styleTop });
+  };
+  onEnter = () => {
+    this.storage.focusedScreen = 'Default';
+    this.retrieveDefaultData();
+  };
+  addItem = (filename: string, image: string) => {
     this._scrollRef.current.flatlistRef.current.getNode().scrollToEnd();
     setTimeout(() => {
-      this.count++;
-      this.array.push({
-        key: `item-${this.count}`,
-        label: this.count,
-        backgroundColor: `rgb(${Math.floor(Math.random() * 255)}, ${this.count *
-          5}, ${132})`
+      this.effectData.push({
+        FileName: filename,
+        Effect: 'None',
+        Delay: '0',
+        displayTime: '0',
+        image: image
       });
-      this.setState({ list: [...this.array] });
+      const array = this.state.list;
+      array.push(filename);
+      this.setState({ list: [...array], loading: false });
       setTimeout(() => {
         this._scrollRef.current.flatlistRef.current.getNode().scrollToEnd();
-      }, 200);
-    }, 300);
+      }, 100);
+    }, 100);
+  };
+  saveFrameImage = (filename: string, image: string) => {
+    this._scrollRef.current.flatlistRef.current.getNode().scrollToEnd();
+    setTimeout(() => {
+      const index = this.findItemIndex(this.effectData, filename);
+      if (index !== -1) {
+        this.effectData[index].image = image;
+        const array = this.state.list;
+        array.push(filename);
+        this.setState({ list: [...array], loading: false });
+      } else {
+        this.setState({ loading: false });
+      }
+
+      setTimeout(() => {
+        this._scrollRef.current.flatlistRef.current.getNode().scrollToEnd();
+      }, 100);
+    }, 100);
   };
   onSelect = () => {
     this.setState({ selectButton: true });
   };
-  itemIsSelected = (index: number) => {
-    this.selectedItems.push(index);
+  itemIsSelected = (value: string) => {
+    this.selectedItems.push(value);
   };
-  itemDeSelected = (index: number) => {
-    const itemindex = this.selectedItems.indexOf(index);
+  itemDeSelected = (value: string) => {
+    const itemindex = this.selectedItems.indexOf(value);
     this.selectedItems.splice(itemindex, 1);
   };
   onCancel = () => {
     this.selectedItems.splice(0, this.selectedItems.length);
     this.setState({ selectButton: false });
   };
-  findItemIndex = (list: ListItem[], value: number) => {
+  findItemIndex = (list: FrameEffects[], value: string) => {
     for (let i = 0; i < list.length; i++) {
-      if (list[i].label === value) {
+      if (list[i].FileName === value) {
         return i;
       }
     }
+    return -1;
+  };
+  updateEffectProperty = (
+    filename: string,
+    property: string,
+    value: string
+  ) => {
+    const index = this.findItemIndex(this.effectData, filename);
+    this.effectData[index][property] = value;
+    this.effectData[index];
+  };
+  onSave = () => {
+    const length = this.state.list.length;
+    if (length) {
+      let data = 'SDEF' + length + '\n';
+      this.state.list.map(value => {
+        const index = this.findItemIndex(this.effectData, value);
+        const frameInfo = this.effectData[index];
+        data =
+          data +
+          '/' +
+          frameInfo.FileName +
+          '\n' +
+          frameInfo.Effect +
+          '\n' +
+          frameInfo.displayTime +
+          '\n' +
+          frameInfo.Delay +
+          '\n';
+      });
+
+      this.storage.socketInstance.send(data);
+    }
+  };
+  retrieveDefaultData = () => {
+    this.setState({
+      loading: true,
+      showFileModal: false
+    });
+    this.getStoredFrames();
+  };
+  getStoredFrames = () => {
+    this.storage.socketInstance.send('GDEF');
+    this.storage.socketInstance.addEventListener('message', this.receiveFrames);
+  };
+  receiveFrames = (event: MessageEvent) => {
+    if (event.data !== 'EX1T') {
+      const data = event.data as string;
+      this.frameData = data;
+    } else {
+      this.storage.socketInstance.removeEventListener(
+        'message',
+        this.receiveFrames
+      );
+      this.extractFrameData(this.frameData);
+    }
+  };
+  extractFrameData = (data: string) => {
+    const frameData = data.split('\n');
+    const frameNum = frameData.length;
+    this.fileName.splice(0, this.fileName.length);
+    if (frameData.length - 1) {
+      for (let i = 0; i < frameNum; i++) {
+        if (frameData[i].length) {
+          const fileData = frameData[i].split(',');
+          const filename = fileData[0].slice(1);
+          if (!this.state.list.includes(filename)) {
+            this.fileName.push(filename);
+            this.effectData.push({
+              FileName: filename,
+              Effect: fileData[1],
+              displayTime: fileData[2],
+              Delay: fileData[3],
+              image: ''
+            });
+          } else {
+            const index = this.findItemIndex(this.effectData, filename);
+            this.effectData[index].Effect = fileData[1];
+            this.effectData[index].displayTime = fileData[2];
+            this.effectData[index].Delay = fileData[3];
+          }
+        }
+      }
+      this.fileName.map(filename => {
+        this.onEnterRead = true;
+        this.onEnterProcess('/' + filename);
+      });
+      this.setState({ loading: false });
+    } else {
+      this.effectData.splice(0, this.effectData.length);
+      this.setState({ loading: false, list: [] });
+    }
+  };
+  onEnterProcess = (filename: string) => {
+    this.dataRead = '';
+    this.storage.socketInstance.addEventListener(
+      'message',
+      this.onEnterReceive
+    );
+    const message = 'DFRD' + filename;
+    this.storage.socketInstance.send(message);
+  };
+  onEnterReceive = (event: { data: string }) => {
+    if (event.data === 'EX1T') {
+      this.saveFrameImage(this.fileName[0], this.removeNewLine(this.dataRead));
+      this.fileName.shift();
+      this.dataRead = '';
+      if (!this.fileName.length) {
+        this.storage.socketInstance.removeEventListener(
+          'message',
+          this.onEnterReceive
+        );
+      }
+    } else {
+      const data = event.data;
+      this.dataRead = this.dataRead + data;
+    }
   };
   onDelete = () => {
+    const stateCopy = this.state.list;
     this.selectedItems.map(value => {
-      const itemIndex = this.findItemIndex(this.array, value);
-      this.array.splice(itemIndex, 1);
+      const itemIndex = this.findItemIndex(this.effectData, value);
+      this.effectData.splice(itemIndex, 1);
+      stateCopy.splice(stateCopy.indexOf(value), 1);
     });
-    this.setState({ list: [...this.array], selectButton: false });
+    this.setState({ list: [...stateCopy], selectButton: false });
     this.selectedItems.splice(0, this.selectedItems.length);
   };
-  renderItem = ({ item, drag, isActive }) => {
-    return (
-      <View
-        style={{
-          backgroundColor: '#ebebeb',
-          width: screenWidth,
-          height: 150,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}
-      >
-        <FrameItem
-          selectedButton={this.state.selectButton}
-          isActive={isActive}
-          itemSelected={this.itemIsSelected}
-          itemDeSelected={this.itemDeSelected}
-          index={item.label}
-          drag={drag}
-          label={item.label}
-          backgroundColor={isActive ? 'gray' : item.backgroundColor}
-        />
-      </View>
-    );
-  };
+
   onDragEnd = ({ data }) => {
-    this.array = data;
     this.setState({ list: [...data] });
   };
-  renderHeader = () => (
+  openFileModal = () => {
+    this.setState({ showFileModal: true });
+  };
+  getSize = (data: string) => {
+    const values = data.split(' ');
+    return {
+      width: parseInt(values[0].substr(1, values[0].length - 1)),
+      height: parseInt(values[1].substr(1, values[1].length - 1))
+    };
+  };
+  processFileNames = (data: string) => {
+    const datalist = [];
+    const files = data;
+    const list = files.split(',');
+    if (list.length % 2 === 0) {
+      for (let i = 0; i < list.length / 2; i++) {
+        const size = this.getSize(list[2 * i + 1]);
+        datalist.push({
+          file: list[2 * i],
+          width: size.width,
+          height: size.height
+        });
+      }
+      return datalist;
+    } else {
+      return [];
+    }
+  };
+  requestFileNames = () => {
+    this.setState({ loading: true });
+
+    this.storage.socketInstance.addEventListener(
+      'message',
+      this.obtainFileNames
+    );
+    this.storage.socketInstance.send('dirs');
+  };
+  obtainFileNames = (event: MessageEvent) => {
+    const data = event.data as string;
+
+    this.storage.socketInstance.removeEventListener(
+      'message',
+      this.obtainFileNames
+    );
+    this.setState({
+      loading: false,
+      showFileModal: true,
+      ESPFileList: this.processFileNames(data.replace(/\//g, ''))
+    });
+  };
+  displayFile = () => {
+    if (this.fileName.length) {
+      this.setState({
+        loading: true,
+        showFileModal: false
+      });
+      this.fileName.map((file, index) => {
+        this.startReadingProcess('/' + file);
+      });
+    }
+  };
+  checkFiles = (): boolean => {
+    const length = this.fileName.length;
+    for (let i = 0; i < length; i++) {
+      if (this.state.list.includes(this.fileName[i])) {
+        return true;
+      }
+    }
+    return false;
+  };
+  fileSelected = (value: string) => {
+    this.fileName.push(value);
+  };
+  fileDeSelected = (value: string) => {
+    const itemindex = this.fileName.indexOf(value);
+    this.fileName.splice(itemindex, 1);
+  };
+  closeFileOpenModal = () => {
+    this.setState({ showFileModal: false });
+    this.fileName.splice(0, this.fileName.length);
+  };
+  removeNewLine(str: string) {
+    return str.replace(/(\r\n|\n|\r| )/g, '');
+  }
+  receiveData = (event: { data: string }) => {
+    if (event.data === 'EX1T') {
+      this.addItem(this.fileName[0], this.removeNewLine(this.dataRead));
+      this.fileName.shift();
+      this.dataRead = '';
+      if (!this.fileName.length) {
+        this.storage.socketInstance.removeEventListener(
+          'message',
+          this.receiveData
+        );
+      }
+    } else {
+      const data = event.data;
+      this.dataRead = this.dataRead + data;
+    }
+  };
+  startReadingProcess = (filename: string) => {
+    this.dataRead = '';
+    this.storage.socketInstance.addEventListener('message', this.receiveData);
+    const message = 'DFRD' + filename;
+    this.storage.socketInstance.send(message);
+  };
+
+  renderItem = ({ item, drag, isActive }) => {
+    const backgroundColor = '#fbfbfb';
+    const index = this.findItemIndex(this.effectData, item);
+    const displayWidth = this.storage.width;
+    const displayHeight = this.storage.height;
+    return (
+      <FrameItem
+        selectedButton={this.state.selectButton}
+        isActive={isActive}
+        itemSelected={this.itemIsSelected}
+        itemDeSelected={this.itemDeSelected}
+        drag={drag}
+        label={item}
+        backgroundColor={isActive ? '#dbdbdb' : backgroundColor}
+        updateEffectProperty={this.updateEffectProperty}
+        borderColor={'#d1d1d1'}
+        displayWidth={displayWidth}
+        displayHeight={displayHeight}
+        data={this.effectData[index]}
+        keyboardSpace={this.state.keyboardSpace}
+      />
+    );
+  };
+  renderSubHeader = () => (
     <View style={styles.header}>
       <View style={{ flex: 1 }}>
         {this.state.selectButton && (
           <CustomButton
             onPress={this.onCancel}
             label={'Cancel'}
+            fontColor="#147EFB"
+            backgroundColor="transparent"
+          />
+        )}
+        {!this.state.selectButton && (
+          <CustomButton
+            onPress={this.requestFileNames}
+            label={'Add'}
             fontColor="#147EFB"
             backgroundColor="transparent"
           />
@@ -170,30 +461,61 @@ class DefaultScreen extends React.PureComponent<Props, State> {
       </View>
     </View>
   );
+  renderFooter = () => (
+    <View style={styles.footer}>
+      {!this.state.selectButton && (
+        <CustomButton
+          onPress={this.onSave}
+          label={'Save to Controller'}
+          fontColor="#147EFB"
+          backgroundColor="transparent"
+        />
+      )}
+      {this.state.selectButton && (
+        <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#4f4f4f' }}>
+          {'Select Frames'}
+        </Text>
+      )}
+    </View>
+  );
+  keyExtractor = (item, index: number) => index.toString();
   render() {
+    const displayWidth = this.storage.width;
+    const displayHeight = this.storage.height;
     return (
       <SafeAreaView style={GlobalStyles.droidSafeArea}>
         <NavigationEvents onWillFocus={this.onEnter} />
         <AppHeader title="Set Display" navigation={this.props.navigation} />
-        {this.renderHeader()}
+        {this.renderSubHeader()}
         <View style={styles.body}>
           <DraggableFlatList
             data={this.state.list}
             renderItem={this.renderItem}
-            keyExtractor={item => `draggable-item-${item.key}`}
+            keyExtractor={this.keyExtractor}
             onDragEnd={this.onDragEnd}
-            extraData={this.state.selectButton}
+            extraData={[this.state.selectButton, this.state.keyboardSpace]}
             ref={this._scrollRef}
           />
         </View>
-        <View style={styles.footer}>
-          <CustomButton
-            onPress={this.addItem}
-            label={'Add Frame'}
-            fontColor="#147EFB"
-            backgroundColor="transparent"
-          />
-        </View>
+        {this.renderFooter()}
+        {this.state.loading && (
+          <View style={styles.modalBackground}>
+            <View style={styles.loading}>
+              <ActivityIndicator size="large" animating={this.state.loading} />
+            </View>
+          </View>
+        )}
+        <DefaultFileModal
+          displayFile={this.displayFile}
+          showFileModal={this.state.showFileModal}
+          width={displayWidth}
+          height={displayHeight}
+          fileList={this.state.ESPFileList}
+          closeOpenModal={this.closeFileOpenModal}
+          fileSelected={this.fileSelected}
+          fileDeSelected={this.fileDeSelected}
+          checkFiles={this.checkFiles}
+        />
       </SafeAreaView>
     );
   }

@@ -41,10 +41,6 @@ class AnimationScreen extends React.PureComponent<Props, State> {
       stopButtonDisabled: true
     };
   }
-
-  onMenuTouch() {
-    alert('Pressed the Menu Button');
-  }
   updateCount = (): void => {
     const newcount = this.state.count + 1;
     this.setState({ count: newcount });

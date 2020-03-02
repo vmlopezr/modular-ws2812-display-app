@@ -11,6 +11,7 @@ import SideMenuHeading from './SideMenuHeading';
 import styles from './SideMenu.style';
 import { ThemedColor } from 'react-navigation-tabs/lib/typescript/src/types';
 //https://expo.github.io/vector-icons/
+import LocalStorage from '../LocalStorage';
 interface Props {
   navigation: Navigation;
   items: NavigationRoute[];
@@ -25,18 +26,25 @@ type Navigation = NavigationScreenProp<NavigationDrawerState, NavigationParams>;
 
 class SideMenu extends React.PureComponent<Props> {
   activeRoute: string;
+  storage: LocalStorage;
   constructor(props) {
     super(props);
     this.activeRoute = this.props.defaultScreen;
+    this.storage = LocalStorage.getInstance();
   }
   navigateToScreen = route => {
-    if (route !== this.getActiveRoute()) {
-      const navigateAction = NavigationActions.navigate({
-        routeName: route
-      });
-      this.props.navigation.dispatch(navigateAction);
-    } else {
+    if (route == 'Default' && !this.storage.ESPConn) {
       this.props.navigation.closeDrawer();
+      alert('Warning: Must have an active connection with the ESP32.');
+    } else {
+      if (route !== this.getActiveRoute()) {
+        const navigateAction = NavigationActions.navigate({
+          routeName: route
+        });
+        this.props.navigation.dispatch(navigateAction);
+      } else {
+        this.props.navigation.closeDrawer();
+      }
     }
   };
   getActiveRoute(): string {

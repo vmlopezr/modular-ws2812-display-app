@@ -37,16 +37,7 @@ class HomeScreen extends React.Component<Props, State> {
     this.width = this.storage.width;
     this.height = this.storage.height;
   }
-  startLineAnimation = () => {
-    if (this.storage.ESPConn) {
-      this.storage.socketInstance.send('ANIM');
-    }
-  };
-  stopLineAnimation = () => {
-    if (this.storage.ESPConn) {
-      this.storage.socketInstance.send('STLI');
-    }
-  };
+
   goToSettings = () => {
     this.props.navigation.navigate('Settings');
   };
@@ -54,7 +45,13 @@ class HomeScreen extends React.Component<Props, State> {
     this.props.navigation.navigate('Animations');
   };
   goToDefaultDisplay = () => {
-    this.props.navigation.navigate('Default');
+    if (this.storage.ESPConn) {
+      this.props.navigation.navigate('Default');
+    } else {
+      alert(
+        'Warning: Live connection with the ESP32 is needed to set defaults.'
+      );
+    }
   };
   render() {
     return (

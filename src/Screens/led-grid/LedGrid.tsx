@@ -67,8 +67,6 @@ class LedGrid extends React.PureComponent<Props, State> {
     this.height = this.storage.height;
     this._scrollParentRef = React.createRef();
     this.colorRef = React.createRef();
-    this.fileRef = React.createRef();
-    this.saveRef = React.createRef();
     this.GridRef = React.createRef();
     this.fileName = '';
   }
@@ -208,7 +206,8 @@ class LedGrid extends React.PureComponent<Props, State> {
         showFileModal: false,
         openedFileName: filename
       });
-      this.startLoadingOnRead();
+      // this.startLoadingOnRead();
+      this.startReadingProcess();
     } else {
       this.fileName = filename;
       this.setState({
@@ -221,14 +220,13 @@ class LedGrid extends React.PureComponent<Props, State> {
     this.fileName = filename;
     this.setState({ showSaveModal: false, openedFileName: filename });
   };
-  startLoadingOnRead = () => {
-    this.startReadingProcess();
-  };
+  // startLoadingOnRead = () => {
+  //   this.startReadingProcess();
+  // };
   startReadingProcess = async () => {
     this.dataRead = '';
     this.storage.socketInstance.addEventListener('message', this.receiveData);
     const message = 'read/' + this.fileName;
-    // const message = 'read/' + this.state.openedFileName;
     this.storage.socketInstance.send(message);
   };
 
@@ -357,7 +355,6 @@ class LedGrid extends React.PureComponent<Props, State> {
                 onPress={this.requestFileNames('save')}
               />
               <FileOpenModal
-                ref={this.fileRef}
                 updateFileName={this.updateFileName}
                 showFileModal={this.state.showFileModal}
                 width={this.state.width}
@@ -366,7 +363,6 @@ class LedGrid extends React.PureComponent<Props, State> {
                 closeOpenModal={this.closeFileOpenModal}
               />
               <SaveFileModal
-                ref={this.saveRef}
                 updateFileName={this.getSavedFileName}
                 showSaveModal={this.state.showSaveModal}
                 closeSaveModal={this.closeSaveModal}

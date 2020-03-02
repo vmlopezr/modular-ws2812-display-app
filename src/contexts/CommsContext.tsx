@@ -28,17 +28,18 @@ class CommsContextProvider extends React.PureComponent<{}, CommsState> {
     if (!this.state.ESPConn) {
       this.storage.connectToServer();
       this.storage.socketInstance.addEventListener('close', () => {
-        console.log('connection closed');
+        // console.log('connection closed');
         this.storage.ESPConn = false;
         this.setState({ ESPConn: false });
       });
       this.storage.socketInstance.addEventListener('open', () => {
-        console.log('connection opened');
+        // console.log('connection opened');
         this.storage.ESPConn = true;
         this.setState({ ESPConn: true });
-        //
+
         if (this.storage.ESPConn) {
           const data = 'size' + this.storage.height + ' ' + this.storage.width;
+
           // Update Size data on the ESP32
           this.storage.socketInstance.send(data);
 
@@ -58,7 +59,20 @@ class CommsContextProvider extends React.PureComponent<{}, CommsState> {
           'Warning: Could not connect to the ESP32. Verify that it is powered correctly and try again.'
         );
       });
+      this.storage.socketInstance.addEventListener('message', this.onConnect);
     }
+  };
+  onConnect = (event: { data: string }) => {
+    const data = event.data;
+
+    if (data === 'REJECT') {
+      this.setState({ ESPConn: false });
+      this.storage.socketInstance.close();
+      alert(
+        'WARNING: Only one client can connect to the ESP32 Controller. Verify that the live connection is shut down.'
+      );
+    }
+    this.storage.socketInstance.removeEventListener('message', this.onConnect);
   };
   render() {
     return (

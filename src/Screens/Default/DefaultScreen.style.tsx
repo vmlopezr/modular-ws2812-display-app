@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { screenHeight, screenWidth } from '../GlobalStyles';
+import { screenWidth, screenHeight } from '../GlobalStyles';
 export default StyleSheet.create({
   title: {
     fontSize: 20,
@@ -7,12 +7,12 @@ export default StyleSheet.create({
     color: 'white'
   },
   body: {
-    backgroundColor: '#ebebeb',
+    backgroundColor: '#f6f6f6',
     flex: 26
   },
   header: {
     height: 45,
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.5,
     borderBottomColor: 'gray',
     backgroundColor: '#fbfbfb',
     flexDirection: 'row',
@@ -24,7 +24,8 @@ export default StyleSheet.create({
     borderTopColor: 'gray',
     backgroundColor: '#fbfbfb',
     flexDirection: 'row',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   button: {
     marginRight: 40,
@@ -43,6 +44,33 @@ export default StyleSheet.create({
   dropZone: {
     height: 100,
     backgroundColor: '#2c3e50'
+  },
+  loading: {
+    position: 'absolute',
+    left: (screenWidth - 100) / 2,
+    top: (screenHeight - 100) / 2,
+    width: 100,
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2
+  },
+  modalBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: screenWidth,
+    height: screenHeight,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(150,150,150,0.5)',
+    zIndex: 2
   }
 });
-export const EffectList = ['Fade', 'Horizontal Slide', 'Vertical Slide'];
+export const EffectList = [
+  'None',
+  'Fade',
+  'Horizontal Slide',
+  'Vertical Slide'
+];

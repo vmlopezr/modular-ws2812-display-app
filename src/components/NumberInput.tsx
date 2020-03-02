@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CustomIcon from './CustomIcon';
+import { screenHeight } from '../Screens/GlobalStyles';
 interface Props {
   label: string;
   updateValue: (value: string) => void;
@@ -14,6 +15,7 @@ interface Props {
   backgroundColor?: string;
   leftPadding?: number;
   rightPadding?: number;
+  allowZero?: boolean;
 }
 interface State {
   prevValue: string;
@@ -49,8 +51,10 @@ class NumberInput extends React.PureComponent<Props, State> {
         ? this.props.backgroundColor
         : '#fff'
     };
+    this.props.updateValue(this.state.value);
     this.inputRef = React.createRef();
   }
+
   handleValueChange = () => {
     if (this.isNormalInteger(this.state.value)) {
       this.setState({ prevValue: this.state.value });
@@ -60,9 +64,14 @@ class NumberInput extends React.PureComponent<Props, State> {
       this.setState({ value: this.state.prevValue });
     }
   };
+
   isNormalInteger(text) {
     const n = Math.floor(Number(text));
-    return n !== Infinity && String(n) === text && n > 0;
+    if (this.props.allowZero) {
+      return n !== Infinity && String(n) === text && n >= 0;
+    } else {
+      return n !== Infinity && String(n) === text && n > 0;
+    }
   }
   onChange = (text: string) => {
     this.setState({ value: text });
@@ -84,7 +93,6 @@ class NumberInput extends React.PureComponent<Props, State> {
   };
   placeIcon = () => {
     const {
-      color,
       iconSize,
       rightPadding,
       leftPadding,

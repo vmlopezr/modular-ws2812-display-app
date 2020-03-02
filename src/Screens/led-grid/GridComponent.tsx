@@ -360,7 +360,6 @@ export default class GridComponent extends React.Component<Props> {
             for (let c = 0; c < 8; c++) {
               index = height * z + c + width * j * 8 + 8 * i;
               data = data + this.NodeGrid[index].slice(1, 7);
-              // data = data + ' ' + index;
             }
             data = data + '\n';
           }
