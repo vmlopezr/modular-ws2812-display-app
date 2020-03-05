@@ -2,7 +2,6 @@
 import React, { createContext } from 'react';
 
 export interface SettingsCtx {
-  // state: SettingsState;
   data: SettingsActions;
 }
 export interface SettingsState {
@@ -10,8 +9,6 @@ export interface SettingsState {
   height: number;
 }
 interface SettingsActions {
-  // widthUpdate: (width: number) => void;
-  // heightUpdate: (height: number) => void;
   updateState(): Promise<string>;
   sizeUpdate: (width: number, height: number) => void;
   width: number;
@@ -35,7 +32,6 @@ class SettingsContextProvider extends React.Component<{}, SettingsState> {
     };
   }
   shouldComponentUpdate(nextState) {
-    console.log('should settings context update?');
     if (
       nextState.width !== this.state.width ||
       nextState.height !== this.state.height
@@ -45,30 +41,21 @@ class SettingsContextProvider extends React.Component<{}, SettingsState> {
     return false;
   }
   sizeUpdate = (width: number, height: number) => {
-    console.log('updating sizes');
     this.width = width;
     this.height = height;
   };
   updateState = () => {
-    console.log('updating state');
-
     return new Promise<string>(resolve => {
       this.setState({ width: this.width, height: this.height }, () =>
         resolve()
       );
     });
   };
-  // widthUpdate = (width: number) => this.setState({ width: width });
-  // heightUpdate = (height: number) => this.setState({ height: height });
   render() {
-    console.log('rendering Settings context');
     return (
       <SettingsContext.Provider
         value={{
-          // state: this.state,
           data: {
-            // widthUpdate: this.widthUpdate,
-            // heightUpdate: this.heightUpdate
             width: this.width,
             height: this.height,
             sizeUpdate: this.sizeUpdate,

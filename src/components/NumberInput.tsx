@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, TextInput, StyleSheet, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CustomIcon from './CustomIcon';
-import { screenHeight } from '../Screens/GlobalStyles';
 interface Props {
   label: string;
   updateValue: (value: string) => void;
@@ -16,6 +15,8 @@ interface Props {
   leftPadding?: number;
   rightPadding?: number;
   allowZero?: boolean;
+  minValue?: number;
+  disabled?: boolean;
 }
 interface State {
   prevValue: string;
@@ -28,7 +29,6 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     fontSize: 15,
     fontWeight: 'bold',
-    color: 'black',
     paddingLeft: 8
   },
   container: {
@@ -60,7 +60,15 @@ class NumberInput extends React.PureComponent<Props, State> {
       this.setState({ prevValue: this.state.value });
       this.props.updateValue(this.state.value);
     } else {
-      alert('This field only accepts positive, non-zero numbers');
+      if (this.props.minValue) {
+        alert(
+          'This field only accepts positive, non-zero numbers. Note: The minimum value for this item is: ' +
+            this.props.minValue
+        );
+      } else {
+        alert('This field only accepts positive, non-zero numbers.');
+      }
+
       this.setState({ value: this.state.prevValue });
     }
   };
@@ -69,6 +77,8 @@ class NumberInput extends React.PureComponent<Props, State> {
     const n = Math.floor(Number(text));
     if (this.props.allowZero) {
       return n !== Infinity && String(n) === text && n >= 0;
+    } else if (this.props.minValue) {
+      return n !== Infinity && String(n) === text && n >= this.props.minValue;
     } else {
       return n !== Infinity && String(n) === text && n > 0;
     }
@@ -129,23 +139,27 @@ class NumberInput extends React.PureComponent<Props, State> {
     }
   };
   render() {
-    const borderColor = this.props.borderColor
-      ? this.props.borderColor
-      : '#e5ebee';
-
+    const { borderColor, disabled, label, icon } = this.props;
+    const borderColorProp = borderColor ? borderColor : '#e5ebee';
+    const pointerCondition = disabled ? 'none' : 'auto';
+    const backgroundColorProp = disabled
+      ? '#cccccc'
+      : this.state.backgroundColor;
+    const FontColor = disabled ? '#666666' : 'black';
     return (
       <View
         style={[
           styles.container,
           {
-            backgroundColor: this.state.backgroundColor,
-            borderColor: borderColor
+            backgroundColor: backgroundColorProp,
+            borderColor: borderColorProp
           }
         ]}
+        pointerEvents={pointerCondition}
         onTouchStart={this.focusInput}
       >
-        {this.props.icon && this.placeIcon()}
-        <Text style={styles.text}>{this.props.label}</Text>
+        {icon && this.placeIcon()}
+        <Text style={[styles.text, { color: FontColor }]}>{label}</Text>
         <TextInput
           ref={this.inputRef}
           style={{

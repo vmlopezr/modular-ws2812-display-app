@@ -4,7 +4,8 @@ import {
   Text,
   ActivityIndicator,
   Keyboard,
-  Platform
+  Platform,
+  Alert
 } from 'react-native';
 import styles from './DefaultScreen.style';
 import { CustomButton } from '../../components/CustomButton';
@@ -35,8 +36,10 @@ interface State {
 interface FrameEffects {
   FileName: string;
   Effect: string;
-  Delay: string;
   displayTime: string;
+  Direction: string;
+  SlideSpeed: string;
+  BlinkTime: string;
   image: string;
 }
 // TODO: Replace the object list in state. Use this.state.size to rerender the list
@@ -100,7 +103,12 @@ class DefaultScreen extends React.PureComponent<Props, State> {
   };
   onEnter = () => {
     this.storage.focusedScreen = 'Default';
+    this.storage.socketInstance.send('EDEF');
     this.retrieveDefaultData();
+  };
+  onExit = () => {
+    this.effectData.splice(0, this.effectData.length);
+    this.setState({ list: [] });
   };
   addItem = (filename: string, image: string) => {
     this._scrollRef.current.flatlistRef.current.getNode().scrollToEnd();
@@ -108,8 +116,10 @@ class DefaultScreen extends React.PureComponent<Props, State> {
       this.effectData.push({
         FileName: filename,
         Effect: 'None',
-        Delay: '0',
-        displayTime: '0',
+        displayTime: '100',
+        Direction: 'Right',
+        SlideSpeed: '100',
+        BlinkTime: '1',
         image: image
       });
       const array = this.state.list;
@@ -167,12 +177,14 @@ class DefaultScreen extends React.PureComponent<Props, State> {
   ) => {
     const index = this.findItemIndex(this.effectData, filename);
     this.effectData[index][property] = value;
-    this.effectData[index];
   };
   onSave = () => {
     const length = this.state.list.length;
     if (length) {
+      // need to send the size
       let data = 'SDEF' + length + '\n';
+      data = data + this.storage.height + '\n';
+      data = data + this.storage.width + '\n';
       this.state.list.map(value => {
         const index = this.findItemIndex(this.effectData, value);
         const frameInfo = this.effectData[index];
@@ -185,11 +197,17 @@ class DefaultScreen extends React.PureComponent<Props, State> {
           '\n' +
           frameInfo.displayTime +
           '\n' +
-          frameInfo.Delay +
+          frameInfo.Direction +
+          '\n' +
+          frameInfo.SlideSpeed +
+          '\n' +
+          frameInfo.BlinkTime +
           '\n';
       });
 
       this.storage.socketInstance.send(data);
+    } else {
+      this.storage.socketInstance.send('SDEF0\n');
     }
   };
   retrieveDefaultData = () => {
@@ -217,28 +235,60 @@ class DefaultScreen extends React.PureComponent<Props, State> {
   };
   extractFrameData = (data: string) => {
     const frameData = data.split('\n');
+    const sizes = frameData[0].split(',');
+    if (
+      sizes[0] === this.storage.width.toString() &&
+      sizes[1] === this.storage.height.toString()
+    ) {
+      this.processESPData(frameData);
+    } else {
+      Alert.alert(
+        'Warning: The App Matrix size and stored controller size do not match.',
+        'The display size stored is:\n\n        width: ' +
+          sizes[0] +
+          ' height: ' +
+          sizes[1] +
+          '. \n\nEntering will overwrite the default frame sequence. Are you sure?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => {
+              this.setState({ loading: false });
+              this.props.navigation.closeDrawer();
+              this.props.navigation.navigate('Settings');
+            }
+          },
+          {
+            text: 'OK',
+            onPress: () => {
+              this.effectData.splice(0, this.effectData.length);
+              this.setState({ loading: false, list: [] });
+            }
+          }
+        ],
+        { cancelable: false }
+      );
+    }
+  };
+  processESPData = (frameData: string[]) => {
     const frameNum = frameData.length;
     this.fileName.splice(0, this.fileName.length);
-    if (frameData.length - 1) {
-      for (let i = 0; i < frameNum; i++) {
+    if (frameData.length - 1 > 0) {
+      for (let i = 1; i < frameNum; i++) {
         if (frameData[i].length) {
           const fileData = frameData[i].split(',');
           const filename = fileData[0].slice(1);
-          if (!this.state.list.includes(filename)) {
-            this.fileName.push(filename);
-            this.effectData.push({
-              FileName: filename,
-              Effect: fileData[1],
-              displayTime: fileData[2],
-              Delay: fileData[3],
-              image: ''
-            });
-          } else {
-            const index = this.findItemIndex(this.effectData, filename);
-            this.effectData[index].Effect = fileData[1];
-            this.effectData[index].displayTime = fileData[2];
-            this.effectData[index].Delay = fileData[3];
-          }
+          this.fileName.push(filename);
+          this.effectData.push({
+            FileName: filename,
+            Effect: fileData[1],
+            displayTime: fileData[2],
+            Direction: fileData[3],
+            SlideSpeed: fileData[4],
+            BlinkTime: fileData[5],
+            image: ''
+          });
         }
       }
       this.fileName.map(filename => {
@@ -247,6 +297,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
       });
       this.setState({ loading: false });
     } else {
+      // Reset the arrays
       this.effectData.splice(0, this.effectData.length);
       this.setState({ loading: false, list: [] });
     }
@@ -346,7 +397,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
         loading: true,
         showFileModal: false
       });
-      this.fileName.map((file, index) => {
+      this.fileName.map(file => {
         this.startReadingProcess('/' + file);
       });
     }
@@ -484,7 +535,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
     const displayHeight = this.storage.height;
     return (
       <SafeAreaView style={GlobalStyles.droidSafeArea}>
-        <NavigationEvents onWillFocus={this.onEnter} />
+        <NavigationEvents onWillFocus={this.onEnter} onWillBlur={this.onExit} />
         <AppHeader title="Set Display" navigation={this.props.navigation} />
         {this.renderSubHeader()}
         <View style={styles.body}>
@@ -493,7 +544,11 @@ class DefaultScreen extends React.PureComponent<Props, State> {
             renderItem={this.renderItem}
             keyExtractor={this.keyExtractor}
             onDragEnd={this.onDragEnd}
-            extraData={[this.state.selectButton, this.state.keyboardSpace]}
+            extraData={[
+              this.state.selectButton,
+              this.state.keyboardSpace,
+              this.effectData
+            ]}
             ref={this._scrollRef}
           />
         </View>

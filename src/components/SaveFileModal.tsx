@@ -134,7 +134,7 @@ class SaveFileModal extends React.Component<Props, State> {
     const message = event.data as string;
     if (message === 'SUXS') {
       this.setState({ loading: false });
-      this.props.updateFileName(this.fileName);
+      this.props.updateFileName(this.getFileName());
     } else if (message === 'FERR' || message === 'WERR') {
       alert(
         'Warning: Could not write file. Please try again. Verify Connections and power.'
@@ -346,7 +346,6 @@ class SaveFileModal extends React.Component<Props, State> {
                 {this.props.fileList.map((value, index) => {
                   return (
                     <View key={index}>
-                      {/* <TouchableOpacity */}
                       <View
                         style={{
                           height: 50,
@@ -359,7 +358,6 @@ class SaveFileModal extends React.Component<Props, State> {
                           alignItems: 'center',
                           justifyContent: 'center'
                         }}
-                        // onPress={this.selectFile(index)}
                         onTouchEnd={this.selectFile(index)}
                       >
                         <View
@@ -389,7 +387,6 @@ class SaveFileModal extends React.Component<Props, State> {
                               value.height}
                           </Text>
                         </View>
-                        {/* </TouchableOpacity> */}
                       </View>
                       <View
                         style={{

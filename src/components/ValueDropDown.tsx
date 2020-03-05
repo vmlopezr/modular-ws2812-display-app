@@ -26,6 +26,7 @@ interface Props {
   leftPadding?: number;
   defaultValue?: string;
   rightPadding?: number;
+  disabled?: boolean;
 }
 interface State {
   valueIndex: number;
@@ -34,6 +35,14 @@ interface State {
 }
 const pickerItemHeight = 40;
 class ValueDropDown extends React.PureComponent<Props, State> {
+  static getDerivedStateFromProps(nextProps: Props, prevState: State) {
+    const defaultIndex = nextProps.defaultValue
+      ? nextProps.data.indexOf(nextProps.defaultValue)
+      : 0;
+    if (!defaultIndex && prevState.valueIndex) {
+      return { valueIndex: defaultIndex };
+    } else return null;
+  }
   dragStarted: boolean;
   timer: NodeJS.Timeout;
   momentumStarted: boolean;
@@ -223,20 +232,34 @@ class ValueDropDown extends React.PureComponent<Props, State> {
     );
   };
   renderDropdownButton = () => {
+    const { disabled } = this.props;
+    const pointerCondition = disabled ? 'none' : 'auto';
+    const backgroundColorProp = disabled
+      ? '#cccccc'
+      : this.state.backgroundColor;
+    const FontColor = disabled ? '#666666' : 'black';
     return (
       <View
-        style={[
-          styles.container,
-          { backgroundColor: this.state.backgroundColor }
-        ]}
+        style={[styles.container, { backgroundColor: backgroundColorProp }]}
+        pointerEvents={pointerCondition}
         onTouchEnd={this.scrollToState}
         onTouchStart={this.updateOpacity}
       >
         {this.props.icon && this.placeIcon()}
-        <Text style={[styles.text, { textAlign: 'left', paddingLeft: 8 }]}>
+        <Text
+          style={[
+            styles.text,
+            { color: FontColor, textAlign: 'left', paddingLeft: 8 }
+          ]}
+        >
           {this.props.label}
         </Text>
-        <Text style={[styles.text, { textAlign: 'right', paddingRight: 30 }]}>
+        <Text
+          style={[
+            styles.text,
+            { color: FontColor, textAlign: 'right', paddingRight: 30 }
+          ]}
+        >
           {this.props.data[this.state.valueIndex]}
         </Text>
         <Ionicons

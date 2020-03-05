@@ -19,10 +19,15 @@ import ValueDropDown from '../../components/ValueDropDown';
 interface Prop {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
 }
-
-export default class SettingsScreen extends React.Component<Prop, {}> {
+interface State {
+  width: number;
+  height: number;
+}
+export default class SettingsScreen extends React.PureComponent<Prop, State> {
   storage: LocalStorage;
-  contextRef: any;
+  contextRef: React.RefObject<CommContextUpdater>;
+  widthRef: React.RefObject<NumberInput>;
+  heightRef: React.RefObject<NumberInput>;
   width: number;
   height: number;
   Width: string;
@@ -30,34 +35,36 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
   constructor(props) {
     super(props);
     this.storage = LocalStorage.getInstance();
-    this.width = this.storage.width;
-    this.height = this.storage.height;
+    this.widthRef = React.createRef();
+    this.heightRef = React.createRef();
     this.contextRef = React.createRef();
-  }
-  shouldComponentUpdate() {
-    console.log('Checking if updating settings');
-    return false;
+    this.state = {
+      width: this.storage.width,
+      height: this.storage.height
+    };
   }
   onPress = () => {
     this.props.navigation.openDrawer();
   };
 
   handleWidthChange = (text: string): void => {
-    this.width = parseInt(text);
+    // this.state.width = parseInt(text);
+    this.setState({ width: parseInt(text) });
   };
   handleHeightChange = (text: string): void => {
-    this.height = parseInt(text);
+    // this.state.height = parseInt(text);
+    this.setState({ height: parseInt(text) });
   };
   onExit = () => {
-    if (this.width % 8 == 0 && this.height % 8 == 0) {
+    if (this.state.width % 8 == 0 && this.state.height % 8 == 0) {
       if (
-        this.width !== this.storage.width ||
-        this.height !== this.storage.height
+        this.state.width !== this.storage.width ||
+        this.state.height !== this.storage.height
       ) {
-        this.storage.setHeight(this.height);
-        this.storage.setWidth(this.width);
+        this.storage.setHeight(this.state.height);
+        this.storage.setWidth(this.state.width);
         if (this.storage.ESPConn) {
-          const data = 'size' + this.height + ' ' + this.width;
+          const data = 'size' + this.state.height + ' ' + this.state.width;
           this.storage.socketInstance.send(data);
         }
       }
@@ -76,11 +83,41 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
   };
   onEnter = () => {
     this.storage.focusedScreen = 'Settings';
+    if (this.storage.ESPConn) {
+      setTimeout(() => {
+        this.storage.socketInstance.send('SETT');
+      }, 200);
+    }
   };
   connect = () => {
     setTimeout(() => {
       this.contextRef.current.restartConnection();
+      setTimeout(() => {
+        this.storage.socketInstance.send('GTSZ');
+        this.storage.socketInstance.addEventListener(
+          'message',
+          this.onReceiveSize
+        );
+      }, 500);
     }, 0);
+  };
+  updateSizeonConnection = (sizes: string[]) => {
+    const newWidth = parseInt(sizes[1]);
+    const newHeight = parseInt(sizes[0]);
+    this.setState({ width: newWidth, height: newHeight });
+    this.storage.setHeight(newHeight);
+    this.storage.setWidth(newWidth);
+    this.widthRef.current.onChange(sizes[1]);
+    this.heightRef.current.onChange(sizes[0]);
+  };
+  onReceiveSize = (event: { data: string }) => {
+    const rawdata = event.data;
+    const sizes = rawdata.split(' ');
+    this.updateSizeonConnection(sizes);
+    this.storage.socketInstance.removeEventListener(
+      'message',
+      this.onReceiveSize
+    );
   };
   closeWebSocket = () => {
     this.storage.close();
@@ -102,6 +139,7 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
               }}
             ></View>
             <NumberInput
+              ref={this.widthRef}
               isCustomIcon={true}
               icon={'grid-width2'}
               iconSize={45}
@@ -109,7 +147,7 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
               label={'Billboard Width:'}
               updateValue={this.handleWidthChange}
               borderColor={'#b0b0b0'}
-              defaultValue={this.storage.width.toString()}
+              defaultValue={this.state.width.toString()}
             />
             <View
               style={{
@@ -119,6 +157,7 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
               }}
             ></View>
             <NumberInput
+              ref={this.heightRef}
               icon={'grid-height2'}
               iconColor="tomato"
               iconSize={40}
@@ -126,7 +165,7 @@ export default class SettingsScreen extends React.Component<Prop, {}> {
               label={'Billboard Height:'}
               updateValue={this.handleHeightChange}
               borderColor={'#b0b0b0'}
-              defaultValue={this.storage.height.toString()}
+              defaultValue={this.state.height.toString()}
             />
             <View
               style={{

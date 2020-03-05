@@ -38,6 +38,19 @@ class SideMenu extends React.PureComponent<Props> {
       alert('Warning: Must have an active connection with the ESP32.');
     } else {
       if (route !== this.getActiveRoute()) {
+        if (
+          route !== 'Draw' &&
+          route !== 'Default' &&
+          this.getActiveRoute() === 'Settings'
+        ) {
+          this.storage.socketInstance.send('STLI');
+        } else if (
+          route !== 'Draw' &&
+          route !== 'Settings' &&
+          this.getActiveRoute() === 'Default'
+        ) {
+          this.storage.socketInstance.send('STLI');
+        }
         const navigateAction = NavigationActions.navigate({
           routeName: route
         });
@@ -76,14 +89,6 @@ class SideMenu extends React.PureComponent<Props> {
             activeRoute={activeRoute}
             navigateTo={this.navigateToScreen}
             icon="ios-create"
-          />
-          <SideMenuHeading
-            navigation={this.props.navigation}
-            label="Type"
-            route="Type"
-            activeRoute={activeRoute}
-            navigateTo={this.navigateToScreen}
-            icon="md-laptop"
           />
           <View style={styles.divider}></View>
           <SideMenuHeading

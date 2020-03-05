@@ -49,7 +49,7 @@ class AnimationScreen extends React.PureComponent<Props, State> {
     this.props.navigation.toggleDrawer();
   };
   onEnter = () => {
-    this.storage.focusedScreen = 'Effects';
+    this.storage.focusedScreen = 'Draw';
   };
   onExit = () => {
     this.setState({ startButtonDisabled: false, stopButtonDisabled: true });

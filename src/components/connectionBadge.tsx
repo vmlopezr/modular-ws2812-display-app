@@ -29,37 +29,32 @@ const placeIcon = (isConnected: boolean) => {
     );
   }
 };
-const connectESP = (context: CommsCtx) => () => {
-  context.actions.reconnectESP();
-};
 const ConnectionBadge = () => {
   const context = useContext(CommsContext);
   const label = context.state.ESPConn ? 'ONLINE' : 'OFFLINE';
   const iconColor = context.state.ESPConn ? 'green' : 'tomato';
   return (
-    <TouchableOpacity onPress={connectESP(context)}>
-      <View
+    <View
+      style={{
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column',
+        alignSelf: 'flex-end'
+      }}
+    >
+      {placeIcon(context.state.ESPConn)}
+      <Text
         style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          flexDirection: 'column',
-          alignSelf: 'flex-end'
+          fontSize: 15,
+          color: iconColor,
+          fontWeight: 'bold',
+          paddingTop: 0,
+          margin: 0
         }}
       >
-        {placeIcon(context.state.ESPConn)}
-        <Text
-          style={{
-            fontSize: 15,
-            color: iconColor,
-            fontWeight: 'bold',
-            paddingTop: 0,
-            margin: 0
-          }}
-        >
-          {label}
-        </Text>
-      </View>
-    </TouchableOpacity>
+        {label}
+      </Text>
+    </View>
   );
 };
 export default ConnectionBadge;

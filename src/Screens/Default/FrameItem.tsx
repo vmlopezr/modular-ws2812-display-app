@@ -6,8 +6,10 @@ import FrameImage from './FrameImage';
 interface FrameEffects {
   FileName: string;
   Effect: string;
-  Delay: string;
   displayTime: string;
+  Direction: string;
+  SlideSpeed: string;
+  BlinkTime: string;
   image: string;
 }
 interface State {
@@ -100,11 +102,17 @@ export default class FrameComponent extends React.PureComponent<Props, State> {
   updateEffect = (value: string) => {
     this.props.updateEffectProperty(this.props.label, 'Effect', value);
   };
-  updateDelay = (value: string) => {
-    this.props.updateEffectProperty(this.props.label, 'Delay', value);
-  };
   updateDisplayTime = (value: string) => {
     this.props.updateEffectProperty(this.props.label, 'displayTime', value);
+  };
+  updateDirection = (value: string) => {
+    this.props.updateEffectProperty(this.props.label, 'Direction', value);
+  };
+  updateSlideSpeed = (value: string) => {
+    this.props.updateEffectProperty(this.props.label, 'SlideSpeed', value);
+  };
+  updateBlinkTime = (value: string) => {
+    this.props.updateEffectProperty(this.props.label, 'BlinkTime', value);
   };
   onPress = () => {
     if (!this.props.selectedButton) {
@@ -133,7 +141,8 @@ export default class FrameComponent extends React.PureComponent<Props, State> {
     } = this.props;
     const borderColorProp = borderColor ? borderColor : 'transparent';
     const borderWidthProp = borderWidth ? borderWidth : 0.5;
-
+    const displayTimeLabel =
+      data.Effect === 'Blink' ? 'Display Time(s):' : 'Display Time(ms):';
     return (
       <TouchableOpacity
         onPress={this.onSelect}
@@ -169,8 +178,10 @@ export default class FrameComponent extends React.PureComponent<Props, State> {
             <Text style={[styles.title, { flex: 1 }]}>{label}</Text>
             <View style={{ flex: 2, justifyContent: 'space-evenly' }}>
               {this.renderData('Effect:', data.Effect)}
-              {this.renderData('Display Time(s):', data.displayTime)}
-              {this.renderData('Delay(ms):', data.Delay)}
+              {this.renderData(displayTimeLabel, data.displayTime)}
+              {this.renderData('Blink Speed(s):', data.BlinkTime)}
+              {this.renderData('Direction:', data.Direction)}
+              {this.renderData('Sliding Speed(ms):', data.SlideSpeed)}
             </View>
           </View>
         </View>
@@ -179,11 +190,15 @@ export default class FrameComponent extends React.PureComponent<Props, State> {
           updateVisibility={this.closeModal}
           updateEffect={this.updateEffect}
           defaultEffect={data.Effect}
-          updateDelay={this.updateDelay}
-          defaultDelay={data.Delay}
           updateDisplayTime={this.updateDisplayTime}
           defaultDisplayTime={data.displayTime}
+          updateDirection={this.updateDirection}
+          updateSlideSpeed={this.updateSlideSpeed}
+          defaultDirection={data.Direction}
+          defaultSlideSpeed={data.SlideSpeed}
           keyboardSpace={this.props.keyboardSpace}
+          defaultBlinkTime={data.BlinkTime}
+          updateBlinkTime={this.updateBlinkTime}
         />
       </TouchableOpacity>
     );

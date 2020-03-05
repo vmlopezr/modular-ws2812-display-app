@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Modal, Text, Alert, StatusBar } from 'react-native';
 import { CustomButton } from './CustomButton';
 import { screenWidth, screenHeight } from '../Screens/GlobalStyles';
-import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
 export interface ESPFiles {
   file: string;
   width: number;
@@ -122,12 +122,9 @@ class FileOpenModal extends React.Component<Props, State> {
   };
 
   render() {
+    const { width, height, showFileModal } = this.props;
     return (
-      <Modal
-        transparent={true}
-        visible={this.props.showFileModal}
-        animationType="none"
-      >
+      <Modal transparent={true} visible={showFileModal} animationType="none">
         <View collapsable={false} style={styles.modal}>
           <StatusBar barStyle="light-content" />
           <View style={styles.modalHeader}>
@@ -174,66 +171,67 @@ class FileOpenModal extends React.Component<Props, State> {
             <ScrollView>
               <View collapsable={false}>
                 {this.props.fileList.map((value, index) => {
-                  return (
-                    <View key={index}>
-                      <View
-                        collapsable={false}
-                        style={{
-                          width: '100%',
-                          height: 8,
-                          backgroundColor: 'transparent'
-                        }}
-                      ></View>
-                      {/* <TouchableOpacity */}
-                      <View
-                        style={{
-                          height: 50,
-                          width: screenWidth,
-                          backgroundColor:
-                            index === this.state.selected ? '#d3d3d3' : '#fff',
-                          borderColor: '#c0c0c0',
-                          borderBottomWidth: 1,
-                          borderTopWidth: 1,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                        // onPress={this.selectFile(index)}
-                        onTouchEnd={this.selectFile(index)}
-                      >
+                  if (value.width === width && value.height === height) {
+                    return (
+                      <View key={index}>
                         <View
                           collapsable={false}
                           style={{
-                            flex: 1,
-                            alignItems: 'flex-start',
-                            justifyContent: 'center',
-                            paddingLeft: 8
+                            width: '100%',
+                            height: 8,
+                            backgroundColor: 'transparent'
                           }}
-                        >
-                          <Text style={{ fontWeight: 'bold' }}>
-                            {value.file}
-                          </Text>
-                        </View>
+                        ></View>
                         <View
-                          collapsable={false}
                           style={{
-                            flex: 1,
-                            alignItems: 'flex-end',
-                            justifyContent: 'center',
-                            paddingRight: 8
+                            height: 50,
+                            width: screenWidth,
+                            backgroundColor:
+                              index === this.state.selected
+                                ? '#d3d3d3'
+                                : '#fff',
+                            borderColor: '#c0c0c0',
+                            borderBottomWidth: 1,
+                            borderTopWidth: 1,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}
+                          onTouchEnd={this.selectFile(index)}
                         >
-                          <Text style={{ fontWeight: 'bold' }}>
-                            {' width: ' +
-                              value.width +
-                              ' height: ' +
-                              value.height}
-                          </Text>
+                          <View
+                            collapsable={false}
+                            style={{
+                              flex: 1,
+                              alignItems: 'flex-start',
+                              justifyContent: 'center',
+                              paddingLeft: 8
+                            }}
+                          >
+                            <Text style={{ fontWeight: 'bold' }}>
+                              {value.file}
+                            </Text>
+                          </View>
+                          <View
+                            collapsable={false}
+                            style={{
+                              flex: 1,
+                              alignItems: 'flex-end',
+                              justifyContent: 'center',
+                              paddingRight: 8
+                            }}
+                          >
+                            <Text style={{ fontWeight: 'bold' }}>
+                              {' width: ' +
+                                value.width +
+                                ' height: ' +
+                                value.height}
+                            </Text>
+                          </View>
                         </View>
                       </View>
-                      {/* </TouchableOpacity> */}
-                    </View>
-                  );
+                    );
+                  }
                 })}
               </View>
             </ScrollView>

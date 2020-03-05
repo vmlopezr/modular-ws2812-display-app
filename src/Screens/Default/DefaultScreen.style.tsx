@@ -70,7 +70,9 @@ export default StyleSheet.create({
 });
 export const EffectList = [
   'None',
-  'Fade',
+  'Blink',
   'Horizontal Slide',
   'Vertical Slide'
 ];
+export const DirectionHorizontal = ['Right', 'Left'];
+export const DirectionVertical = ['Up', 'Down'];

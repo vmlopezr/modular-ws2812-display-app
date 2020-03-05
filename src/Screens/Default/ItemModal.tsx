@@ -4,7 +4,11 @@ import { CustomButton } from '../../components/CustomButton';
 import { screenWidth, screenHeight } from '../../Screens/GlobalStyles';
 import ValueDropDown from '../../components/ValueDropDown';
 import NumberInput from '../../components/NumberInput';
-import { EffectList } from './DefaultScreen.style';
+import {
+  EffectList,
+  DirectionHorizontal,
+  DirectionVertical
+} from './DefaultScreen.style';
 
 const modalHeight = screenHeight * 0.4;
 
@@ -53,25 +57,49 @@ const styles = StyleSheet.create({
 interface Props {
   updateVisibility(value: boolean): void;
   updateEffect(value: string): void;
-  updateDelay(value: string): void;
   updateDisplayTime(value: string): void;
-  defaultDelay: string;
+  updateDirection(value: string): void;
+  updateSlideSpeed(value: string): void;
+  updateBlinkTime(value: string): void;
+  defaultDirection: string;
+  defaultSlideSpeed: string;
   defaultEffect: string;
   defaultDisplayTime: string;
+  defaultBlinkTime: string;
   modalVisible: boolean;
   keyboardSpace: number;
 }
 interface State {
   Effect: string;
-  delay: number;
+  displayTime: string;
+  Direction: string;
+  SlideSpeed: string;
+  BlinkTime: string;
+  slideComponentDisabled: boolean;
+  nonSlideComponentDisabled: boolean;
 }
 
 class ItemModal extends PureComponent<Props, State> {
   constructor(props) {
     super(props);
+    // console.log('constructor');
+    const {
+      defaultDirection,
+      defaultSlideSpeed,
+      defaultDisplayTime,
+      defaultEffect,
+      defaultBlinkTime
+    } = this.props;
+    const condition =
+      defaultEffect === 'None' || defaultEffect === 'Blink' ? false : true;
     this.state = {
-      Effect: '',
-      delay: 0
+      Effect: defaultEffect,
+      displayTime: defaultDisplayTime,
+      Direction: defaultDirection,
+      SlideSpeed: defaultSlideSpeed,
+      BlinkTime: defaultBlinkTime,
+      slideComponentDisabled: defaultEffect === 'None' ? true : false,
+      nonSlideComponentDisabled: condition
     };
   }
 
@@ -79,7 +107,34 @@ class ItemModal extends PureComponent<Props, State> {
     this.props.updateVisibility(false);
   };
   handleEffectChange = (value: string) => {
-    this.setState({ Effect: value });
+    this.props.updateEffect(value);
+    const newDirection = value === 'Vertical Slide' ? 'Up' : 'Right';
+    const disabled = value === 'None' ? true : false;
+    const nonslide = value === 'None' || value === 'Blink' ? false : true;
+
+    this.props.updateDirection(newDirection);
+    this.setState({
+      Effect: value,
+      Direction: newDirection,
+      slideComponentDisabled: disabled,
+      nonSlideComponentDisabled: nonslide
+    });
+  };
+  handleDisplayTimeChange = (value: string) => {
+    this.props.updateDisplayTime(value);
+    this.setState({ displayTime: value });
+  };
+  handleDirectionChange = (value: string) => {
+    this.props.updateDirection(value);
+    this.setState({ Direction: value });
+  };
+  handleSlideSpeedChange = (value: string) => {
+    this.props.updateSlideSpeed(value);
+    this.setState({ SlideSpeed: value });
+  };
+  handleBlinkTimeChange = (value: string) => {
+    this.props.updateBlinkTime(value);
+    this.setState({ BlinkTime: value });
   };
   renderHeader = () => (
     <View style={styles.modalHeader}>
@@ -95,48 +150,91 @@ class ItemModal extends PureComponent<Props, State> {
       </View>
     </View>
   );
+  renderDirectionData = (): string[] => {
+    if (this.state.Effect === 'Vertical Slide') {
+      return DirectionVertical;
+    } else {
+      return DirectionHorizontal;
+    }
+  };
 
-  renderBody = () => (
-    <ScrollView style={{ width: '100%' }}>
-      <View style={styles.spacer}></View>
-      <ValueDropDown
-        label="Effect Types:"
-        icon="ios-contract"
-        data={EffectList}
-        iconSize={45}
-        leftPadding={18}
-        rightPadding={4}
-        defaultValue={this.props.defaultEffect}
-        updateValue={this.props.updateEffect}
-      />
-      <View style={styles.spacer}></View>
-      <NumberInput
-        label="Display Time (s):"
-        updateValue={this.props.updateDisplayTime}
-        defaultValue={this.props.defaultDisplayTime}
-        icon={'ios-clock'}
-        iconColor={'gray'}
-        iconSize={45}
-        leftPadding={17}
-        rightPadding={4}
-        borderColor="#8f8f8f"
-        allowZero={true}
-      />
-      <View style={styles.spacer}></View>
-      <NumberInput
-        label="Delay (ms):"
-        updateValue={this.props.updateDelay}
-        defaultValue={this.props.defaultDelay}
-        icon={'ios-clock'}
-        iconColor={'gray'}
-        iconSize={45}
-        leftPadding={17}
-        rightPadding={4}
-        borderColor="#8f8f8f"
-        allowZero={true}
-      />
-    </ScrollView>
-  );
+  renderBody = () => {
+    const displayTimeLabel =
+      this.state.Effect === 'Blink' ? 'Display Time(s):' : 'Display Time(ms):';
+    const minValueDisplay = this.state.Effect === 'Blink' ? 1 : 100;
+    return (
+      <ScrollView style={{ width: '100%' }}>
+        <View style={styles.spacer}></View>
+        <ValueDropDown
+          label="Effect Types:"
+          icon="ios-contract"
+          data={EffectList}
+          iconSize={45}
+          leftPadding={18}
+          rightPadding={4}
+          defaultValue={this.state.Effect}
+          updateValue={this.handleEffectChange}
+        />
+        <View style={styles.spacer}></View>
+        <NumberInput
+          label={displayTimeLabel}
+          updateValue={this.handleDisplayTimeChange}
+          defaultValue={this.state.displayTime}
+          icon={'ios-clock'}
+          iconColor={'gray'}
+          iconSize={45}
+          leftPadding={17}
+          rightPadding={4}
+          borderColor="#8f8f8f"
+          minValue={minValueDisplay}
+          disabled={this.state.nonSlideComponentDisabled}
+        />
+        <View style={styles.spacer}></View>
+        <NumberInput
+          label="Blink Speed(s):"
+          updateValue={this.handleBlinkTimeChange}
+          defaultValue={this.state.BlinkTime}
+          icon={'ios-clock'}
+          iconColor={'gray'}
+          iconSize={45}
+          leftPadding={17}
+          rightPadding={4}
+          borderColor="#8f8f8f"
+          minValue={1}
+          disabled={this.state.nonSlideComponentDisabled}
+        />
+        <View style={styles.spacer}></View>
+        <ValueDropDown
+          label="Direction:"
+          updateValue={this.handleDirectionChange}
+          defaultValue={this.state.Direction}
+          icon="ios-contract"
+          data={this.renderDirectionData()}
+          iconSize={45}
+          leftPadding={18}
+          rightPadding={4}
+          disabled={this.state.slideComponentDisabled}
+        />
+        <View style={styles.spacer}></View>
+        <NumberInput
+          label="Slide Speed(ms):"
+          updateValue={this.handleSlideSpeedChange}
+          defaultValue={this.state.SlideSpeed}
+          icon={'ios-clock'}
+          iconColor={'gray'}
+          iconSize={45}
+          leftPadding={17}
+          rightPadding={4}
+          borderColor="#8f8f8f"
+          minValue={60}
+          disabled={this.state.slideComponentDisabled}
+        />
+        <View
+          style={{ width: '100%', height: 100, backgroundColor: 'transparent' }}
+        ></View>
+      </ScrollView>
+    );
+  };
 
   render() {
     return (

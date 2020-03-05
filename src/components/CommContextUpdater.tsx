@@ -9,7 +9,7 @@ class CommContextUpdater extends React.PureComponent<{}, {}> {
     super(props);
   }
   restartConnection() {
-    console.log('attempting to restart connection');
+    // console.log('attempting to restart connection');
     this.context.actions.reconnectESP();
   }
   render() {

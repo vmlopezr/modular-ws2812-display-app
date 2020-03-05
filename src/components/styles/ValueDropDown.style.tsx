@@ -6,8 +6,7 @@ export default StyleSheet.create({
   text: {
     flex: 3,
     fontSize: 15,
-    fontWeight: 'bold',
-    color: 'black'
+    fontWeight: 'bold'
   },
   parentContainer: {
     flex: 1,

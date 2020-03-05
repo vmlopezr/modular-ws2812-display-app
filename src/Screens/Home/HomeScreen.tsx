@@ -7,7 +7,8 @@ import { screenWidth } from '../GlobalStyles';
 import {
   NavigationParams,
   NavigationScreenProp,
-  NavigationState
+  NavigationState,
+  NavigationEvents
 } from 'react-navigation';
 
 import { CustomButton } from '../../components/CustomButton';
@@ -37,7 +38,9 @@ class HomeScreen extends React.Component<Props, State> {
     this.width = this.storage.width;
     this.height = this.storage.height;
   }
-
+  onEnter = () => {
+    this.storage.focusedScreen = 'Home';
+  };
   goToSettings = () => {
     this.props.navigation.navigate('Settings');
   };
@@ -57,6 +60,7 @@ class HomeScreen extends React.Component<Props, State> {
     return (
       <SafeAreaView style={GlobalStyles.droidSafeArea}>
         <AppHeader title="Home" navigation={this.props.navigation} />
+        <NavigationEvents onWillFocus={this.onEnter} />
         <View style={styles.body}>
           <ScrollView>
             <View

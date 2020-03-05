@@ -28,24 +28,19 @@ class CommsContextProvider extends React.PureComponent<{}, CommsState> {
     if (!this.state.ESPConn) {
       this.storage.connectToServer();
       this.storage.socketInstance.addEventListener('close', () => {
-        // console.log('connection closed');
         this.storage.ESPConn = false;
         this.setState({ ESPConn: false });
       });
       this.storage.socketInstance.addEventListener('open', () => {
-        // console.log('connection opened');
         this.storage.ESPConn = true;
         this.setState({ ESPConn: true });
 
         if (this.storage.ESPConn) {
-          const data = 'size' + this.storage.height + ' ' + this.storage.width;
-
-          // Update Size data on the ESP32
-          this.storage.socketInstance.send(data);
-
           // Set ESP32 State Maching to Live Input State
           if (this.storage.focusedScreen === 'LedGrid') {
             this.storage.socketInstance.send('LIVE');
+          } else if (this.storage.focusedScreen === 'Settings') {
+            this.storage.socketInstance.send('SETT');
           }
 
           // Update Matrix Type on ESP32
@@ -53,8 +48,6 @@ class CommsContextProvider extends React.PureComponent<{}, CommsState> {
         }
       });
       this.storage.socketInstance.addEventListener('error', () => {
-        // When the connection attempt times out after 10 seconds
-        // Alert the user. The close event runs after error.
         alert(
           'Warning: Could not connect to the ESP32. Verify that it is powered correctly and try again.'
         );

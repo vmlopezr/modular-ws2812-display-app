@@ -8,7 +8,6 @@ import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import Home from './Screens/Home/HomeScreen';
 import Settings from './Screens/Settings/Settings';
-import MessageScreen from './Screens/live-input/MessageScreen';
 import LedGrid from './Screens/led-grid/LedGrid';
 import { createAppContainer } from 'react-navigation';
 import { Dimensions } from 'react-native';
@@ -16,7 +15,7 @@ import SideMenu from './Screens/SideMenu';
 import AnimationScreen from './Screens/Animations/AnimationScreen';
 import DefaultScreen from './Screens/Default/DefaultScreen';
 
-const defaultScreen = 'Type';
+const defaultScreen = 'Home';
 export type tabBarIconType = {
   focused: boolean;
   tintColor: string;
@@ -40,18 +39,6 @@ const DashboardTab = createBottomTabNavigator(
       navigationOptions: () => ({
         tabBarIcon: (options: tabBarIconType) => {
           const iconName = `${options.focused ? 'ios-home' : 'md-home'}`;
-          return (
-            <Ionicons name={iconName} size={25} color={options.tintColor} />
-          );
-        }
-      })
-    },
-    Type: {
-      screen: MessageScreen,
-      navigationOptions: () => ({
-        drawerLabel: () => null,
-        tabBarIcon: (options: tabBarIconType) => {
-          const iconName = `${options.focused ? 'md-laptop' : 'ios-laptop'}`;
           return (
             <Ionicons name={iconName} size={25} color={options.tintColor} />
           );

@@ -206,7 +206,6 @@ class LedGrid extends React.PureComponent<Props, State> {
         showFileModal: false,
         openedFileName: filename
       });
-      // this.startLoadingOnRead();
       this.startReadingProcess();
     } else {
       this.fileName = filename;
@@ -220,9 +219,6 @@ class LedGrid extends React.PureComponent<Props, State> {
     this.fileName = filename;
     this.setState({ showSaveModal: false, openedFileName: filename });
   };
-  // startLoadingOnRead = () => {
-  //   this.startReadingProcess();
-  // };
   startReadingProcess = async () => {
     this.dataRead = '';
     this.storage.socketInstance.addEventListener('message', this.receiveData);
