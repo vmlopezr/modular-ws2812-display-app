@@ -22,25 +22,28 @@ interface State {
   count: number;
   startButtonDisabled: boolean;
   stopButtonDisabled: boolean;
+  animationType: string;
 }
 
 class AnimationScreen extends React.PureComponent<Props, State> {
   connectionRef: any;
   storage: LocalStorage;
-  displayEffect: string;
+  // displayEffect: string;
   constructor(props) {
     super(props);
     this.connectionRef = React.createRef();
     this.storage = LocalStorage.getInstance();
-    this.displayEffect = '';
+    // this.displayEffect = '';
 
     this.state = {
+      animationType: 'Single Pixel',
       isFocused: false,
       count: 0,
       startButtonDisabled: false,
       stopButtonDisabled: true
     };
   }
+  // Update label when new option is chosen
   updateCount = (): void => {
     const newcount = this.state.count + 1;
     this.setState({ count: newcount });
@@ -53,19 +56,18 @@ class AnimationScreen extends React.PureComponent<Props, State> {
   };
   onExit = () => {
     this.setState({ startButtonDisabled: false, stopButtonDisabled: true });
-    if (this.storage.ESPConn) {
-      this.storage.socketInstance.send('STLI');
-    }
+    if (this.storage.ESPConn) this.storage.socketInstance.send('STLI');
   };
   handleEffectchange = (effect: string) => {
-    this.displayEffect = effect;
+    this.setState({ animationType: effect });
+    // this.displayEffect = effect;
   };
   animationMessage = () => {
-    if (this.displayEffect === 'Single Pixel') {
+    if (this.state.animationType === 'Single Pixel') {
       return 'PIXL';
-    } else if (this.displayEffect === 'Horizontal Line') {
+    } else if (this.state.animationType === 'Horizontal Line') {
       return 'HLNE';
-    } else if (this.displayEffect === 'Vertical Line') {
+    } else if (this.state.animationType === 'Vertical Line') {
       return 'VLNE';
     }
   };
@@ -100,6 +102,7 @@ class AnimationScreen extends React.PureComponent<Props, State> {
               icon="ios-star-half"
               data={animations}
               iconSize={30}
+              defaultValue={this.state.animationType}
               updateValue={this.handleEffectchange}
             />
 

@@ -9,7 +9,18 @@ export default StyleSheet.create({
   body: {
     flex: 26,
     alignItems: 'center',
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ebebeb'
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    height: 55,
+    width: screenWidth,
+    borderTopWidth: 1,
+    borderTopColor: 'gray',
+    backgroundColor: '#d3d3d3',
+    flexDirection: 'row'
   },
   button: {
     marginRight: 40,

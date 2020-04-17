@@ -42,8 +42,8 @@ interface FrameEffects {
   BlinkTime: string;
   image: string;
 }
-// TODO: Replace the object list in state. Use this.state.size to rerender the list
-// The draggable list will render this.array, instead of this.state.list
+// NOTE: This screen can only be accessed with live connection to ESP32.
+//       It will reject the user otherwise.
 class DefaultScreen extends React.PureComponent<Props, State> {
   storage: LocalStorage;
   _scrollRef: React.RefObject<DraggableFlatList<string>>;
@@ -55,6 +55,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
   dataRead: string;
   onEnterRead: boolean;
   frameData: string;
+  loadingTimeout: any;
   constructor(props) {
     super(props);
     this.storage = LocalStorage.getInstance();
@@ -72,7 +73,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
       loading: false,
       showFileModal: false,
       ESPFileList: [],
-      keyboardSpace: screenHeight * 0.6
+      keyboardSpace: screenHeight * 0.4
     };
     if (Platform.OS === 'android') {
       Keyboard.addListener('keyboardDidHide', this.keyboardHide);
@@ -82,12 +83,16 @@ class DefaultScreen extends React.PureComponent<Props, State> {
       Keyboard.addListener('keyboardWillShow', this.keyboardShow);
     }
   }
+
+  // Shift modal up by the height of the keyboard
   keyboardShow = event => {
-    const top = event.endCoordinates.height;
-    this.updateModalPosition(screenHeight * 0.6 - top);
+    const keyboardHeight = event.endCoordinates.height;
+    this.updateModalPosition(screenHeight * 0.4 - keyboardHeight);
   };
+
+  // Shift modal position back to default
   keyboardHide = () => {
-    this.updateModalPosition(screenHeight * 0.6);
+    this.updateModalPosition(screenHeight * 0.4);
   };
   componentWillUnmount() {
     if (Platform.OS === 'android') {
@@ -107,6 +112,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
     this.retrieveDefaultData();
   };
   onExit = () => {
+    this.storage.setDefaultFrames(this.state.list);
     this.effectData.splice(0, this.effectData.length);
     this.setState({ list: [] });
   };
@@ -185,6 +191,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
       let data = 'SDEF' + length + '\n';
       data = data + this.storage.height + '\n';
       data = data + this.storage.width + '\n';
+      data = data + this.storage.MatrixType + '\n';
       this.state.list.map(value => {
         const index = this.findItemIndex(this.effectData, value);
         const frameInfo = this.effectData[index];
@@ -215,6 +222,12 @@ class DefaultScreen extends React.PureComponent<Props, State> {
       loading: true,
       showFileModal: false
     });
+    this.loadingTimeout = setTimeout(() => {
+      this.setState({ loading: false });
+      alert(
+        'Warning: The connection has reached the timeout limit. Please check your connection with the controller.'
+      );
+    }, 15000);
     this.getStoredFrames();
   };
   getStoredFrames = () => {
@@ -255,6 +268,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
             style: 'cancel',
             onPress: () => {
               this.setState({ loading: false });
+              clearTimeout(this.loadingTimeout);
               this.props.navigation.closeDrawer();
               this.props.navigation.navigate('Settings');
             }
@@ -264,6 +278,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
             onPress: () => {
               this.effectData.splice(0, this.effectData.length);
               this.setState({ loading: false, list: [] });
+              clearTimeout(this.loadingTimeout);
             }
           }
         ],
@@ -291,15 +306,19 @@ class DefaultScreen extends React.PureComponent<Props, State> {
           });
         }
       }
+      this.storage.setDefaultFrames(this.fileName);
       this.fileName.map(filename => {
         this.onEnterRead = true;
         this.onEnterProcess('/' + filename);
       });
       this.setState({ loading: false });
+      clearTimeout(this.loadingTimeout);
     } else {
       // Reset the arrays
       this.effectData.splice(0, this.effectData.length);
       this.setState({ loading: false, list: [] });
+      this.storage.clearDefaultFrames();
+      clearTimeout(this.loadingTimeout);
     }
   };
   onEnterProcess = (filename: string) => {
@@ -471,6 +490,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
       />
     );
   };
+
   renderSubHeader = () => (
     <View style={styles.header}>
       <View style={{ flex: 1 }}>
@@ -488,6 +508,11 @@ class DefaultScreen extends React.PureComponent<Props, State> {
             label={'Add'}
             fontColor="#147EFB"
             backgroundColor="transparent"
+            iconSize={30}
+            iconColor={'#147EFB'}
+            leftPadding={8}
+            rightPadding={4}
+            icon={'ios-image'}
           />
         )}
       </View>

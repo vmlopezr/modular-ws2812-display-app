@@ -25,8 +25,8 @@ import LocalStorage from '../LocalStorage';
 import GlobalStyles, { screenWidth } from '../Screens/GlobalStyles';
 import AppHeader from '../components/AppHeader';
 import { CustomButton } from '../components/CustomButton';
-import FileOpenModal from '../components/FileOpenModal';
-import SaveFileModal from '../components/SaveFileModal';
+import FileOpenModal from '../Screens/led-grid/FileOpenModal';
+import SaveFileModal from '../Screens/led-grid/SaveFileModal';
 interface Props {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
 }

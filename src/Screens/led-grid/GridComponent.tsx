@@ -4,14 +4,11 @@ import {
   View,
   ScrollView,
   PanResponderInstance,
-  PanResponder,
-  GestureResponderEvent
+  PanResponder
 } from 'react-native';
 import LedNode from './LedNode';
 import * as Haptics from 'expo-haptics';
 import LocalStorage from '../../LocalStorage';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import { screenWidth } from '../GlobalStyles';
 
 interface Props {
   updateLoading?(loading: boolean): void;
@@ -79,24 +76,18 @@ export default class GridComponent extends React.Component<Props> {
     this._panResponder = PanResponder.create({
       onMoveShouldSetPanResponder: () => true,
 
-      onPanResponderMove: event => {
+      onPanResponderMove: (event, state) => {
         if (
           !(
             (this.props.height == 8 &&
-              this.props.width == 8 &&
               (event.nativeEvent.pageY <= 157 ||
-                event.nativeEvent.pageY >= 353 ||
-                event.nativeEvent.pageX <= 107 ||
-                event.nativeEvent.pageX >= 303)) ||
-            (this.props.height == 8 &&
-              (event.nativeEvent.pageY <= 157 ||
-                event.nativeEvent.pageY >= 353)) ||
+                event.nativeEvent.pageY >= 400)) ||
             (this.props.width == 8 &&
               (event.nativeEvent.pageX <= 107 ||
                 event.nativeEvent.pageX >= 303))
           )
         ) {
-          if (event.nativeEvent.pageY > 75 && event.nativeEvent.pageY < 435) {
+          if (event.nativeEvent.pageY > 75 && event.nativeEvent.pageY < 480) {
             if (this._move) {
               clearTimeout(this.shortPressTimeout);
               clearTimeout(this.longPressTimeout);
@@ -155,7 +146,6 @@ export default class GridComponent extends React.Component<Props> {
             this.firstTouchX.toString() + ',' + this.firstTouchY.toString();
 
           this.shortPressTimeout = setTimeout(() => {
-            // this._touch = true;
             this.liveIndex = this.getDisplayIndex(
               this.firstTouchX,
               this.firstTouchY
@@ -193,22 +183,41 @@ export default class GridComponent extends React.Component<Props> {
     }
   };
   getDisplayIndex = (x, y) => {
-    const isCJMCU = this.storage.MatrixType === 'CJMCU-64' ? true : false;
-
-    if (!isCJMCU && x % 2 === 1) {
-      return (
-        8 * (x % 8) +
-        (7 - (y % 8)) +
-        64 * Math.floor(x / 8) +
-        this.props.width * 8 * Math.floor(y / 8)
-      );
-    } else {
+    // const isCJMCU = this.storage.MatrixType === 'CJMCU-64' ? true : false;
+    const mtype = this.storage.MatrixType;
+    const width = this.storage.width;
+    const height = this.storage.height;
+    if (mtype === 'WS-2812-8x8') {
+      if (x % 2 === 1) {
+        return (
+          8 * (x % 8) +
+          (7 - (y % 8)) +
+          64 * Math.floor(x / 8) +
+          width * 8 * Math.floor(y / 8)
+        );
+      } else {
+        return (
+          8 * (x % 8) +
+          (y % 8) +
+          64 * Math.floor(x / 8) +
+          width * 8 * Math.floor(y / 8)
+        );
+      }
+    } else if (mtype === 'CJMCU-64') {
       return (
         8 * (x % 8) +
         (y % 8) +
         64 * Math.floor(x / 8) +
-        this.props.width * 8 * Math.floor(y / 8)
+        width * 8 * Math.floor(y / 8)
       );
+    } else if (mtype === 'CUSTOM-CJMCU') {
+      return y + height * x;
+    } else if (mtype === 'CUSTOM-WS-2812') {
+      if (x % 2 === 1) {
+        return height - 1 - y + height * x;
+      } else {
+        return y + height * x;
+      }
     }
   };
   setScrolls(scroll: boolean) {
@@ -267,9 +276,7 @@ export default class GridComponent extends React.Component<Props> {
       node.current.resetColor();
     });
     this.NodeGrid.fill('#000000', 0, this.NodeGrid.length);
-    if (this.storage.ESPConn) {
-      this.storage.socketInstance.send('CLRI');
-    }
+    if (this.storage.ESPConn) this.storage.socketInstance.send('CLRI');
   };
   shouldComponentUpdate(nextProps) {
     if (
@@ -280,7 +287,6 @@ export default class GridComponent extends React.Component<Props> {
       setTimeout(() => {
         this.startUpdateProcess();
       }, 30);
-
       return true;
     } else if (this.changedGridSize) {
       this.changedGridSize = false;
@@ -303,76 +309,196 @@ export default class GridComponent extends React.Component<Props> {
       );
     }
   }
+  // Place the values based on LED Matrix type
   processFileData(data: string) {
+    const mtype = this.storage.MatrixType;
     const height = this.props.height;
     const width = this.props.width;
     const subheight = height / 8;
     const subwidth = width / 8;
-
-    if (height > 8) {
-      let count = 0;
-      for (let i = 0; i < subheight; i++) {
-        for (let j = 0; j < subwidth; j++) {
-          for (let z = 0; z < 8; z++) {
-            for (let c = 0; c < 8; c++) {
-              const index = height * z + c + width * j * 8 + 8 * i;
-              const color = '#' + data.slice(count * 6, (count + 1) * 6);
-              this.NodeGrid[index] = color;
-              this.NodeRef[index].current.updateColor(
-                '#' +
-                  this.convertValue(color.slice(1, 3)) +
-                  this.convertValue(color.slice(3, 5)) +
-                  this.convertValue(color.slice(5, 7))
-              );
-              count++;
+    if (mtype === 'CJMCU-64') {
+      if (height > 8) {
+        let count = 0;
+        for (let i = 0; i < subheight; i++) {
+          for (let j = 0; j < subwidth; j++) {
+            for (let z = 0; z < 8; z++) {
+              for (let c = 0; c < 8; c++) {
+                const index = height * z + c + width * j * 8 + 8 * i;
+                const color = '#' + data.slice(count * 6, (count + 1) * 6);
+                this.NodeGrid[index] = color;
+                this.NodeRef[index].current.updateColor(
+                  '#' +
+                    this.convertValue(color.slice(1, 3)) +
+                    this.convertValue(color.slice(3, 5)) +
+                    this.convertValue(color.slice(5, 7))
+                );
+                count++;
+              }
             }
           }
         }
+      } else {
+        let color = '';
+        for (let i = 0; i < height * width; i++) {
+          color = '#' + data.slice(i * 6, (i + 1) * 6);
+          const newcolor =
+            '#' +
+            this.convertValue(color.slice(1, 3)) +
+            this.convertValue(color.slice(3, 5)) +
+            this.convertValue(color.slice(5, 7));
+          this.NodeGrid[i] = color;
+          this.NodeRef[i].current.updateColor(newcolor);
+        }
       }
-    } else {
-      let color = '';
-      for (let i = 0; i < height * width; i++) {
-        color = '#' + data.slice(i * 6, (i + 1) * 6);
-        const newcolor =
-          '#' +
-          this.convertValue(color.slice(1, 3)) +
-          this.convertValue(color.slice(3, 5)) +
-          this.convertValue(color.slice(5, 7));
-        this.NodeGrid[i] = color;
-        this.NodeRef[i].current.updateColor(newcolor);
+    } else if (mtype === 'WS-2812-8x8') {
+      if (height > 8) {
+        let count = 0;
+        for (let i = 0; i < subheight; i++) {
+          for (let j = 0; j < subwidth; j++) {
+            for (let z = 0; z < 8; z++) {
+              for (let c = 0; c < 8; c++) {
+                const index = height * z + c + width * j * 8 + 8 * i;
+                const color = '#' + data.slice(count * 6, (count + 1) * 6);
+                this.NodeGrid[index] = color;
+                this.NodeRef[index].current.updateColor(
+                  '#' +
+                    this.convertValue(color.slice(1, 3)) +
+                    this.convertValue(color.slice(3, 5)) +
+                    this.convertValue(color.slice(5, 7))
+                );
+                count++;
+              }
+            }
+          }
+        }
+      } else {
+        let color = '';
+        for (let i = 0; i < height * width; i++) {
+          color = '#' + data.slice(i * 6, (i + 1) * 6);
+          const newcolor =
+            '#' +
+            this.convertValue(color.slice(1, 3)) +
+            this.convertValue(color.slice(3, 5)) +
+            this.convertValue(color.slice(5, 7));
+          this.NodeGrid[i] = color;
+          this.NodeRef[i].current.updateColor(newcolor);
+        }
+      }
+    } else if (mtype === 'CUSTOM-CJMCU') {
+      let count = 0;
+      for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height; j++) {
+          const index = j + height * i;
+          const color = '#' + data.slice(count * 6, (count + 1) * 6);
+          this.NodeGrid[index] = color;
+          this.NodeRef[index].current.updateColor(
+            '#' +
+              this.convertValue(color.slice(1, 3)) +
+              this.convertValue(color.slice(3, 5)) +
+              this.convertValue(color.slice(5, 7))
+          );
+          count++;
+        }
+      }
+    } else if (mtype === 'CUSTOM-WS-2812') {
+      let count = 0;
+      let index = 0;
+      for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height; j++) {
+          if (i % 2 == 0) {
+            index = j + height * i;
+          } else {
+            index = height - 1 - j + height * i;
+          }
+          const color = '#' + data.slice(count * 6, (count + 1) * 6);
+          this.NodeGrid[index] = color;
+          this.NodeRef[index].current.updateColor(
+            '#' +
+              this.convertValue(color.slice(1, 3)) +
+              this.convertValue(color.slice(3, 5)) +
+              this.convertValue(color.slice(5, 7))
+          );
+          count++;
+        }
       }
     }
+
     this.finishedReading = true;
     this.props.updateLoading(false);
   }
+  // Send grid data based on LED Matrix type
   sendGridData(): string {
     const height = this.props.height;
     const width = this.props.width;
     const subheight = height / 8;
     const subwidth = width / 8;
-
+    const mtype = this.storage.MatrixType;
     let data = '';
     let index = 0;
-    if (height > 8) {
-      for (let i = 0; i < subheight; i++) {
-        for (let j = 0; j < subwidth; j++) {
-          for (let z = 0; z < 8; z++) {
-            for (let c = 0; c < 8; c++) {
-              index = height * z + c + width * j * 8 + 8 * i;
-              data = data + this.NodeGrid[index].slice(1, 7);
+
+    if (mtype === 'CJMCU-64') {
+      if (height > 8) {
+        for (let i = 0; i < subheight; i++) {
+          for (let j = 0; j < subwidth; j++) {
+            for (let z = 0; z < 8; z++) {
+              for (let c = 0; c < 8; c++) {
+                index = height * z + c + width * j * 8 + 8 * i;
+                data = data + this.NodeGrid[index].slice(1, 7);
+              }
+              data = data + '\n';
             }
-            data = data + '\n';
           }
         }
+      } else {
+        this.NodeGrid.map((value, index) => {
+          if (index % 8 === 0 && index > 0) {
+            data = data + '\n';
+          }
+          data = data + value.slice(1, 7);
+        });
       }
-    } else {
-      this.NodeGrid.map((value, index) => {
-        if (index % 8 === 0 && index > 0) {
-          data = data + '\n';
+    } else if (mtype === 'WS-2812-8x8') {
+      if (height > 8) {
+        for (let i = 0; i < subheight; i++) {
+          for (let j = 0; j < subwidth; j++) {
+            for (let z = 0; z < 8; z++) {
+              for (let c = 0; c < 8; c++) {
+                index = height * z + c + width * j * 8 + 8 * i;
+                data = data + this.NodeGrid[index].slice(1, 7);
+              }
+              data = data + '\n';
+            }
+          }
         }
-        data = data + value.slice(1, 7);
-      });
+      } else {
+        this.NodeGrid.map((value, index) => {
+          if (index % 8 === 0 && index > 0) {
+            data = data + '\n';
+          }
+          data = data + value.slice(1, 7);
+        });
+      }
+    } else if (mtype === 'CUSTOM-CJMCU') {
+      let index = 0;
+      for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height; j++) {
+          index = j + i * width;
+          data = data + this.NodeGrid[index].slice(1, 7);
+        }
+        data = data + '\n';
+      }
+    } else if (mtype === 'CUSTOM-WS-2812') {
+      let index = 0;
+      for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height; j++) {
+          if (i % 2 == 0) index = j + i * width;
+          else index = height - 1 - j + i * width;
+          data = data + this.NodeGrid[index].slice(1, 7);
+        }
+        data = data + '\n';
+      }
     }
+
     return data;
   }
   async UpdatePage() {

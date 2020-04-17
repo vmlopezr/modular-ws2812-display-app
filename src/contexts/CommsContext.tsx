@@ -30,6 +30,7 @@ class CommsContextProvider extends React.PureComponent<{}, CommsState> {
       this.storage.socketInstance.addEventListener('close', () => {
         this.storage.ESPConn = false;
         this.setState({ ESPConn: false });
+        alert('Connection with the ESP32 is closed.');
       });
       this.storage.socketInstance.addEventListener('open', () => {
         this.storage.ESPConn = true;
@@ -42,30 +43,14 @@ class CommsContextProvider extends React.PureComponent<{}, CommsState> {
           } else if (this.storage.focusedScreen === 'Settings') {
             this.storage.socketInstance.send('SETT');
           }
-
-          // Update Matrix Type on ESP32
-          this.storage.socketInstance.send('TYPE' + this.storage.MatrixType);
         }
       });
       this.storage.socketInstance.addEventListener('error', () => {
         alert(
-          'Warning: Could not connect to the ESP32. Verify that it is powered correctly and try again.'
+          'Warning: Could not connect to the ESP32, or the connection was lost.\nVerify that it is powered correctly and try again.'
         );
       });
-      this.storage.socketInstance.addEventListener('message', this.onConnect);
     }
-  };
-  onConnect = (event: { data: string }) => {
-    const data = event.data;
-
-    if (data === 'REJECT') {
-      this.setState({ ESPConn: false });
-      this.storage.socketInstance.close();
-      alert(
-        'WARNING: Only one client can connect to the ESP32 Controller. Verify that the live connection is shut down.'
-      );
-    }
-    this.storage.socketInstance.removeEventListener('message', this.onConnect);
   };
   render() {
     return (

@@ -7,11 +7,12 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   Platform,
-  GestureResponderEvent
+  GestureResponderEvent,
+  ScrollView,
+  TouchableOpacity
 } from 'react-native';
 import styles from './styles/ValueDropDown.style';
 import { CustomButton } from './CustomButton';
-import { ScrollView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import CustomIcon from './CustomIcon';
@@ -27,6 +28,8 @@ interface Props {
   defaultValue?: string;
   rightPadding?: number;
   disabled?: boolean;
+  displayHelpIcon?: boolean;
+  goToScreen?: () => void;
 }
 interface State {
   valueIndex: number;
@@ -39,7 +42,7 @@ class ValueDropDown extends React.PureComponent<Props, State> {
     const defaultIndex = nextProps.defaultValue
       ? nextProps.data.indexOf(nextProps.defaultValue)
       : 0;
-    if (!defaultIndex && prevState.valueIndex) {
+    if (defaultIndex !== prevState.valueIndex) {
       return { valueIndex: defaultIndex };
     } else return null;
   }
@@ -47,7 +50,7 @@ class ValueDropDown extends React.PureComponent<Props, State> {
   timer: NodeJS.Timeout;
   momentumStarted: boolean;
   isScrollTo: boolean;
-  scrollRef: any;
+  scrollRef: React.RefObject<ScrollView>;
   prevIndex: number;
 
   constructor(props) {
@@ -133,9 +136,6 @@ class ValueDropDown extends React.PureComponent<Props, State> {
         this.scrollFix(element);
       }
     }, 10);
-  };
-  updateOpacity = () => {
-    this.setState({ backgroundColor: 'rgb(200, 196, 196)' });
   };
   scrollToState = () => {
     const yPos = pickerItemHeight * this.state.valueIndex;
@@ -231,6 +231,27 @@ class ValueDropDown extends React.PureComponent<Props, State> {
       </View>
     );
   };
+  infoIcon = () => {
+    return (
+      <TouchableOpacity onPress={this.props.goToScreen}>
+        <View
+          style={{
+            flex: 1,
+            alignContent: 'center',
+            width: 40,
+            justifyContent: 'center',
+            backgroundColor: '#fff'
+          }}
+        >
+          <Ionicons
+            name={'ios-help-circle-outline'}
+            size={40}
+            color={'#147EFB'}
+          />
+        </View>
+      </TouchableOpacity>
+    );
+  };
   renderDropdownButton = () => {
     const { disabled } = this.props;
     const pointerCondition = disabled ? 'none' : 'auto';
@@ -240,34 +261,55 @@ class ValueDropDown extends React.PureComponent<Props, State> {
     const FontColor = disabled ? '#666666' : 'black';
     return (
       <View
-        style={[styles.container, { backgroundColor: backgroundColorProp }]}
-        pointerEvents={pointerCondition}
-        onTouchEnd={this.scrollToState}
-        onTouchStart={this.updateOpacity}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: '#fff'
+        }}
       >
-        {this.props.icon && this.placeIcon()}
-        <Text
-          style={[
-            styles.text,
-            { color: FontColor, textAlign: 'left', paddingLeft: 8 }
-          ]}
+        <TouchableOpacity
+          onPress={this.scrollToState}
+          disabled={disabled}
+          style={{ flex: 5 }}
         >
-          {this.props.label}
-        </Text>
-        <Text
-          style={[
-            styles.text,
-            { color: FontColor, textAlign: 'right', paddingRight: 30 }
-          ]}
-        >
-          {this.props.data[this.state.valueIndex]}
-        </Text>
-        <Ionicons
-          size={30}
-          name={'ios-arrow-down'}
-          color={'black'}
-          style={{ paddingTop: 5, paddingRight: 20 }}
-        />
+          <View
+            style={[styles.container, { backgroundColor: backgroundColorProp }]}
+            pointerEvents={pointerCondition}
+          >
+            {this.props.icon && this.placeIcon()}
+            <Text
+              style={[
+                styles.LabelText,
+                {
+                  color: FontColor,
+                  textAlign: 'left',
+                  paddingLeft: 8
+                }
+              ]}
+            >
+              {this.props.label}
+            </Text>
+            <Text
+              style={[
+                styles.ValueText,
+                {
+                  color: FontColor,
+                  textAlign: 'right',
+                  paddingRight: 10
+                }
+              ]}
+            >
+              {this.props.data[this.state.valueIndex]}
+            </Text>
+            <Ionicons
+              size={30}
+              name={'ios-arrow-down'}
+              color={'black'}
+              style={{ paddingTop: 5, paddingRight: 20 }}
+            />
+          </View>
+        </TouchableOpacity>
+        {this.props.displayHelpIcon && this.infoIcon()}
       </View>
     );
   };

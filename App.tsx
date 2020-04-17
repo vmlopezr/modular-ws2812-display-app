@@ -1,3 +1,4 @@
+import 'react-native-get-random-values';
 import React from 'react';
 import MainNavigator from './src/Navigators';
 import CommsContextProvider from './src/contexts/CommsContext';

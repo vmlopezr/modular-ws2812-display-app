@@ -4,6 +4,7 @@ import { CustomButton } from '../../components/CustomButton';
 import { screenWidth, screenHeight } from '../GlobalStyles';
 import { ScrollView } from 'react-native-gesture-handler';
 import FileItem from '../../components/FileItem';
+import LocalStorage from '../../LocalStorage';
 export interface ESPFiles {
   file: string;
   width: number;
@@ -43,94 +44,125 @@ const styles = StyleSheet.create({
     backgroundColor: '#ebebeb',
     width: '100%'
   },
-  buttonContainer: {
-    flex: 1,
-    flexDirection: 'row-reverse'
-  },
   titleContainer: {
     flex: 3,
     justifyContent: 'center',
     alignItems: 'center'
-  }
+  },
+  titleLabel: { fontSize: 20, fontWeight: 'bold', color: 'white' }
 });
 interface Props {
-  displayFile(): void;
   closeOpenModal(): void;
   showFileModal: boolean;
   fileList: ESPFiles[];
-  width: number;
-  height: number;
-  fileSelected(filename: string): void;
-  fileDeSelected(filename: string): void;
-  checkFiles(): boolean;
 }
 
 class DefaultFileModal extends React.PureComponent<Props> {
-  prevFileName: string;
+  fileSelection: string[];
+  storage: LocalStorage;
   constructor(props) {
     super(props);
-    this.prevFileName = '';
+    this.storage = LocalStorage.getInstance();
   }
-  closeModal = () => {
-    if (!this.props.checkFiles()) {
-      this.props.displayFile();
+  componentDidMount() {
+    this.fileSelection = [];
+  }
+  isFileDisplayed = (): string[] => {
+    const filesDisplayed = [];
+    this.fileSelection.map(filename => {
+      if (this.storage.defaultFrameDisplayed.includes(filename)) {
+        filesDisplayed.push(filename);
+      }
+    });
+    return filesDisplayed;
+  };
+  deleteFiles = () => {
+    const { socketInstance } = this.storage;
+    const filesDisplayed = this.isFileDisplayed();
+    if (filesDisplayed.length === 0) {
+      this.fileSelection.map(value => {
+        socketInstance.send('DELS/' + value);
+      });
+      this.fileSelection.splice(0, this.fileSelection.length);
+      this.props.closeOpenModal();
     } else {
-      alert('Warning: One of the files has already been chosen.');
+      let message = '';
+      filesDisplayed.map(filename => {
+        message = message + filename + '\n';
+      });
+      alert(
+        'Please remove the following files from the default page before attempting to delete:\n\n' +
+          message
+      );
     }
   };
-  renderHeader(): JSX.Element {
+  onCloseModal = () => {
+    this.fileSelection.splice(0, this.fileSelection.length);
+    this.props.closeOpenModal();
+  };
+  fileSelected = (filename: string): void => {
+    this.fileSelection.push(filename);
+  };
+  fileDeSelected = (filename: string): void => {
+    const index = this.fileSelection.indexOf(filename);
+    if (index !== -1) {
+      this.fileSelection.splice(index, 1);
+    }
+  };
+  renderHeader = () => {
     return (
       <View style={styles.modalHeader}>
-        <View style={styles.buttonContainer}>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row-reverse'
+          }}
+        >
           <CustomButton
             width={60}
             height={20}
             backgroundColor="transparent"
             label="Cancel"
             fontColor="#fff"
-            onPress={this.props.closeOpenModal}
+            onPress={this.onCloseModal}
           />
         </View>
-        <View collapsable={false} style={styles.titleContainer}>
-          <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>
-            Open File
-          </Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.titleLabel}>Delete File</Text>
         </View>
-        <View style={styles.buttonContainer}>
+        <View style={{ flex: 1, flexDirection: 'row-reverse' }}>
           <CustomButton
             width={60}
             height={20}
             backgroundColor="transparent"
-            label="Done"
+            label="Delete"
             fontColor="#fff"
-            onPress={this.closeModal}
+            onPress={this.deleteFiles}
           />
         </View>
       </View>
     );
-  }
+  };
   render() {
-    const { width, height, showFileModal } = this.props;
+    const { showFileModal } = this.props;
     return (
       <Modal transparent={true} visible={showFileModal} animationType="none">
-        <View collapsable={false} style={styles.modal}>
+        <View style={styles.modal}>
           <StatusBar barStyle="light-content" />
           {this.renderHeader()}
-          <View style={styles.modalBody} collapsable={false}>
+          <View style={styles.modalBody}>
             <ScrollView>
-              <View collapsable={false}>
+              <View>
                 {this.props.fileList.map((value, index) => {
-                  if (value.width === width && value.height === height) {
-                    return (
-                      <FileItem
-                        key={index + 'f'}
-                        data={value}
-                        fileDeSelected={this.props.fileDeSelected}
-                        fileSelected={this.props.fileSelected}
-                        fileModal={showFileModal}
-                      />
-                    );
-                  }
+                  return (
+                    <FileItem
+                      key={index + 'h'}
+                      data={value}
+                      fileDeSelected={this.fileDeSelected}
+                      fileSelected={this.fileSelected}
+                      fileModal={this.props.showFileModal}
+                    />
+                  );
                 })}
               </View>
               <View

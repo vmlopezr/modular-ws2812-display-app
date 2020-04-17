@@ -1,5 +1,6 @@
+/* eslint-disable no-undef */
 import React from 'react';
-import { View } from 'react-native';
+import { View, ScrollView, Image } from 'react-native';
 import LocalStorage from '../../LocalStorage';
 import {
   NavigationParams,
@@ -10,7 +11,6 @@ import {
 } from 'react-navigation';
 import styles, { MatrixType } from './Settings.style';
 import NumberInput from '../../components/NumberInput';
-import { ScrollView } from 'react-native-gesture-handler';
 import { CustomButton } from '../../components/CustomButton';
 import CommContextUpdater from '../../components/CommContextUpdater';
 import GlobalStyles from '../GlobalStyles';
@@ -22,15 +22,18 @@ interface Prop {
 interface State {
   width: number;
   height: number;
+  matrixType: string;
 }
 export default class SettingsScreen extends React.PureComponent<Prop, State> {
   storage: LocalStorage;
   contextRef: React.RefObject<CommContextUpdater>;
   widthRef: React.RefObject<NumberInput>;
   heightRef: React.RefObject<NumberInput>;
+  // matrixTypeRef: React.RefObject<ValueDropDown>;
   width: number;
   height: number;
   Width: string;
+  updatedValues: boolean;
 
   constructor(props) {
     super(props);
@@ -38,9 +41,12 @@ export default class SettingsScreen extends React.PureComponent<Prop, State> {
     this.widthRef = React.createRef();
     this.heightRef = React.createRef();
     this.contextRef = React.createRef();
+    // this.matrixTypeRef = React.createRef();
+    this.updatedValues = false;
     this.state = {
       width: this.storage.width,
-      height: this.storage.height
+      height: this.storage.height,
+      matrixType: this.storage.MatrixType
     };
   }
   onPress = () => {
@@ -48,41 +54,66 @@ export default class SettingsScreen extends React.PureComponent<Prop, State> {
   };
 
   handleWidthChange = (text: string): void => {
-    // this.state.width = parseInt(text);
     this.setState({ width: parseInt(text) });
+    this.updatedValues = true;
   };
   handleHeightChange = (text: string): void => {
-    // this.state.height = parseInt(text);
     this.setState({ height: parseInt(text) });
+    this.updatedValues = true;
   };
   onExit = () => {
-    if (this.state.width % 8 == 0 && this.state.height % 8 == 0) {
-      if (
-        this.state.width !== this.storage.width ||
-        this.state.height !== this.storage.height
-      ) {
-        this.storage.setHeight(this.state.height);
-        this.storage.setWidth(this.state.width);
-        if (this.storage.ESPConn) {
-          const data = 'size' + this.state.height + ' ' + this.state.width;
-          this.storage.socketInstance.send(data);
+    const { width, height, matrixType } = this.state;
+
+    // Verify max LED limit
+    if (width * height <= 1024) {
+      //identify the type of matrices involved
+      if (matrixType === 'CJMCU-64' || matrixType === 'WS-2812-8x8') {
+        // enforce height and width as multiples of 8
+        if (width % 8 == 0 && height % 8 == 0) {
+          if (this.updatedValues) {
+            this.storage.setHeight(height);
+            this.storage.setWidth(width);
+            if (this.storage.ESPConn) {
+              const data =
+                'size' + height + ' ' + width + ' ' + this.storage.MatrixType;
+              this.storage.socketInstance.send(data);
+            }
+          }
+          this.updatedValues = false;
+        } else {
+          this.props.navigation.closeDrawer();
+          this.props.navigation.navigate('Settings');
+          alert('WARNING: The display sizes must be multiples of 8');
         }
-      }
-      if (this.storage.ESPConn) {
-        this.storage.socketInstance.send('TYPE' + this.storage.MatrixType);
+      } else {
+        if (this.updatedValues) {
+          this.storage.setHeight(height);
+          this.storage.setWidth(width);
+          if (this.storage.ESPConn) {
+            const data =
+              'size' + height + ' ' + width + ' ' + this.storage.MatrixType;
+            this.storage.socketInstance.send(data);
+          }
+        }
+        this.updatedValues = false;
       }
     } else {
-      this.props.navigation.toggleDrawer();
+      this.props.navigation.closeDrawer();
       this.props.navigation.navigate('Settings');
 
-      alert('WARNING: The display sizes must be multiples of 8');
+      alert(
+        'WARNING: The application supports only up to 1024 total LEDS. Please recheck the product of the width and length.'
+      );
     }
   };
   handleMatrixTypechange = (matrixType: string) => {
+    this.setState({ matrixType: matrixType });
     this.storage.setMatrixType(matrixType);
+    this.updatedValues = true;
   };
   onEnter = () => {
     this.storage.focusedScreen = 'Settings';
+    this.updatedValues = false;
     if (this.storage.ESPConn) {
       setTimeout(() => {
         this.storage.socketInstance.send('SETT');
@@ -90,30 +121,50 @@ export default class SettingsScreen extends React.PureComponent<Prop, State> {
     }
   };
   connect = () => {
-    setTimeout(() => {
-      this.contextRef.current.restartConnection();
-      setTimeout(() => {
-        this.storage.socketInstance.send('GTSZ');
-        this.storage.socketInstance.addEventListener(
-          'message',
-          this.onReceiveSize
-        );
-      }, 500);
-    }, 0);
+    this.contextRef.current.restartConnection();
+    this.storage.socketInstance.addEventListener('message', this.ESPResponse);
   };
-  updateSizeonConnection = (sizes: string[]) => {
-    const newWidth = parseInt(sizes[1]);
-    const newHeight = parseInt(sizes[0]);
+  ESPResponse = (event: MessageEvent) => {
+    this.storage.socketInstance.removeEventListener(
+      'message',
+      this.ESPResponse
+    );
+    const data = event.data;
+    const values = data.split('\n');
+    if (values[0] === 'REJECT') {
+      this.storage.socketInstance.close();
+      alert(
+        'WARNING: Only one client can connect to the ESP32 Controller. Verify that the live connection is shut down.'
+      );
+    } else {
+      this.updateSettings(values);
+    }
+  };
+  updateSettings = (data: string[]) => {
+    this.updatedValues = true;
+    const newWidth = parseInt(data[2]);
+    const newHeight = parseInt(data[1]);
+    const defaultFramesDisplayed = data[4].split(',').map(filename => {
+      return filename.slice(1, filename.length);
+    });
+
+    if (defaultFramesDisplayed[0].length === 0) {
+      this.storage.clearDefaultFrames();
+    } else {
+      this.storage.setDefaultFrames(defaultFramesDisplayed);
+    }
+
+    this.handleMatrixTypechange(data[3]);
     this.setState({ width: newWidth, height: newHeight });
     this.storage.setHeight(newHeight);
     this.storage.setWidth(newWidth);
-    this.widthRef.current.onChange(sizes[1]);
-    this.heightRef.current.onChange(sizes[0]);
+    this.widthRef.current.onChange(data[2]);
+    this.heightRef.current.onChange(data[1]);
   };
   onReceiveSize = (event: { data: string }) => {
     const rawdata = event.data;
     const sizes = rawdata.split(' ');
-    this.updateSizeonConnection(sizes);
+    this.updateSettings(sizes);
     this.storage.socketInstance.removeEventListener(
       'message',
       this.onReceiveSize
@@ -122,6 +173,10 @@ export default class SettingsScreen extends React.PureComponent<Prop, State> {
   closeWebSocket = () => {
     this.storage.close();
   };
+  goToMatrixType = () => {
+    this.props.navigation.navigate('MatrixType');
+  };
+
   render() {
     return (
       <SafeAreaView style={GlobalStyles.droidSafeArea}>
@@ -147,6 +202,7 @@ export default class SettingsScreen extends React.PureComponent<Prop, State> {
               label={'Billboard Width:'}
               updateValue={this.handleWidthChange}
               borderColor={'#b0b0b0'}
+              leftPadding={6}
               defaultValue={this.state.width.toString()}
             />
             <View
@@ -161,6 +217,7 @@ export default class SettingsScreen extends React.PureComponent<Prop, State> {
               icon={'grid-height2'}
               iconColor="tomato"
               iconSize={40}
+              leftPadding={6}
               isCustomIcon={true}
               label={'Billboard Height:'}
               updateValue={this.handleHeightChange}
@@ -180,9 +237,12 @@ export default class SettingsScreen extends React.PureComponent<Prop, State> {
               icon="md-apps"
               data={MatrixType}
               iconSize={50}
-              leftPadding={22}
+              leftPadding={15}
               rightPadding={4}
+              defaultValue={this.state.matrixType}
               updateValue={this.handleMatrixTypechange}
+              displayHelpIcon={true}
+              goToScreen={this.goToMatrixType}
             />
             <View
               style={{
@@ -191,6 +251,7 @@ export default class SettingsScreen extends React.PureComponent<Prop, State> {
                 backgroundColor: 'transparent'
               }}
             ></View>
+
             <CustomButton
               backgroundColor="#fff"
               borderColor="#d3d3d3"

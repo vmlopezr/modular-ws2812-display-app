@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text, TouchableOpacity, StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 interface Props {
   label: string;
   onPress: () => void;
@@ -10,6 +11,12 @@ interface Props {
   fontSize?: number;
   borderColor?: string;
   disable?: boolean;
+
+  icon?: string;
+  iconColor?: string;
+  iconSize?: number;
+  leftPadding?: number;
+  rightPadding?: number;
 }
 
 const styles = StyleSheet.create({
@@ -19,6 +26,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopWidth: 1,
     borderBottomWidth: 1,
+    flexDirection: 'row',
     flex: 1
   },
   label: {
@@ -29,6 +37,24 @@ const styles = StyleSheet.create({
 
 const onPress = (props: Props) => () => {
   props.onPress();
+};
+const placeIcon = (props: Props) => {
+  const { iconColor, iconSize, leftPadding, rightPadding } = props;
+  const colorProp = iconColor ? iconColor : 'gray';
+  const sizeProp = iconSize ? iconSize : 30;
+  const leftPaddingProp = leftPadding ? leftPadding : 15;
+  const rightPaddingProp = rightPadding ? rightPadding : 5;
+
+  return (
+    <View
+      style={{
+        paddingLeft: leftPaddingProp,
+        paddingRight: rightPaddingProp
+      }}
+    >
+      <Ionicons name={props.icon} size={sizeProp} color={colorProp} />
+    </View>
+  );
 };
 
 export const CustomButton = (props: Props) => {
@@ -57,6 +83,7 @@ export const CustomButton = (props: Props) => {
       onPress={onPress(props)}
       disabled={disabled}
     >
+      {props.icon && placeIcon(props)}
       <Text style={[styles.label, { color: disabledFontColor, fontSize }]}>
         {props.label}
       </Text>

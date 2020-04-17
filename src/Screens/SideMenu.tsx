@@ -43,13 +43,13 @@ class SideMenu extends React.PureComponent<Props> {
           route !== 'Default' &&
           this.getActiveRoute() === 'Settings'
         ) {
-          this.storage.socketInstance.send('STLI');
+          if (this.storage.ESPConn) this.storage.socketInstance.send('STLI');
         } else if (
           route !== 'Draw' &&
           route !== 'Settings' &&
           this.getActiveRoute() === 'Default'
         ) {
-          this.storage.socketInstance.send('STLI');
+          if (this.storage.ESPConn) this.storage.socketInstance.send('STLI');
         }
         const navigateAction = NavigationActions.navigate({
           routeName: route
@@ -116,6 +116,14 @@ class SideMenu extends React.PureComponent<Props> {
             navigateTo={this.navigateToScreen}
             icon="ios-settings"
           />
+          {/* <SideMenuHeading
+            navigation={this.props.navigation}
+            label="Matrix Type Help"
+            route="MatrixType"
+            activeRoute={activeRoute}
+            navigateTo={this.navigateToScreen}
+            icon="ios-settings"
+          /> */}
           <View style={styles.divider}></View>
         </ScrollView>
       </View>

@@ -10,7 +10,7 @@ import {
   DirectionVertical
 } from './DefaultScreen.style';
 
-const modalHeight = screenHeight * 0.4;
+const modalHeight = screenHeight * 0.6;
 
 const styles = StyleSheet.create({
   modalTransparentBackground: {
@@ -76,7 +76,8 @@ interface State {
   SlideSpeed: string;
   BlinkTime: string;
   slideComponentDisabled: boolean;
-  nonSlideComponentDisabled: boolean;
+  noneComponentDisabled: boolean;
+  blinkComponentDisabled: boolean;
 }
 
 class ItemModal extends PureComponent<Props, State> {
@@ -90,16 +91,18 @@ class ItemModal extends PureComponent<Props, State> {
       defaultEffect,
       defaultBlinkTime
     } = this.props;
-    const condition =
-      defaultEffect === 'None' || defaultEffect === 'Blink' ? false : true;
+    const slideState =
+      defaultEffect == 'None' || defaultEffect == 'Blink' ? true : false;
     this.state = {
       Effect: defaultEffect,
       displayTime: defaultDisplayTime,
       Direction: defaultDirection,
       SlideSpeed: defaultSlideSpeed,
       BlinkTime: defaultBlinkTime,
-      slideComponentDisabled: defaultEffect === 'None' ? true : false,
-      nonSlideComponentDisabled: condition
+      slideComponentDisabled: slideState,
+      noneComponentDisabled:
+        defaultEffect === 'None' || defaultEffect === 'Blink' ? false : true,
+      blinkComponentDisabled: defaultEffect === 'Blink' ? false : true
     };
   }
 
@@ -109,15 +112,18 @@ class ItemModal extends PureComponent<Props, State> {
   handleEffectChange = (value: string) => {
     this.props.updateEffect(value);
     const newDirection = value === 'Vertical Slide' ? 'Up' : 'Right';
-    const disabled = value === 'None' ? true : false;
-    const nonslide = value === 'None' || value === 'Blink' ? false : true;
+    const blinkComponentDisabled = value === 'Blink' ? false : true;
+    const noneComponentDisabled =
+      value === 'None' || value === 'Blink' ? false : true;
+    const slideDisabled = value === 'None' || value === 'Blink' ? true : false;
 
     this.props.updateDirection(newDirection);
     this.setState({
       Effect: value,
       Direction: newDirection,
-      slideComponentDisabled: disabled,
-      nonSlideComponentDisabled: nonslide
+      slideComponentDisabled: slideDisabled,
+      noneComponentDisabled: noneComponentDisabled,
+      blinkComponentDisabled: blinkComponentDisabled
     });
   };
   handleDisplayTimeChange = (value: string) => {
@@ -187,7 +193,7 @@ class ItemModal extends PureComponent<Props, State> {
           rightPadding={4}
           borderColor="#8f8f8f"
           minValue={minValueDisplay}
-          disabled={this.state.nonSlideComponentDisabled}
+          disabled={this.state.noneComponentDisabled}
         />
         <View style={styles.spacer}></View>
         <NumberInput
@@ -201,7 +207,7 @@ class ItemModal extends PureComponent<Props, State> {
           rightPadding={4}
           borderColor="#8f8f8f"
           minValue={1}
-          disabled={this.state.nonSlideComponentDisabled}
+          disabled={this.state.blinkComponentDisabled}
         />
         <View style={styles.spacer}></View>
         <ValueDropDown

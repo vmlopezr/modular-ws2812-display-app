@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, Keyboard } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Keyboard,
+  TouchableOpacity
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CustomIcon from './CustomIcon';
 interface Props {
@@ -147,38 +154,39 @@ class NumberInput extends React.PureComponent<Props, State> {
       : this.state.backgroundColor;
     const FontColor = disabled ? '#666666' : 'black';
     return (
-      <View
-        style={[
-          styles.container,
-          {
-            backgroundColor: backgroundColorProp,
-            borderColor: borderColorProp
-          }
-        ]}
-        pointerEvents={pointerCondition}
-        onTouchStart={this.focusInput}
-      >
-        {icon && this.placeIcon()}
-        <Text style={[styles.text, { color: FontColor }]}>{label}</Text>
-        <TextInput
-          ref={this.inputRef}
-          style={{
-            flex: 3,
-            textAlign: 'right',
-            paddingRight: 40,
-            height: 49,
-            borderBottomWidth: 1,
-            borderColor: '#d3d3d3',
-            fontSize: 20
-          }}
-          defaultValue={this.state.value}
-          value={this.state.value}
-          keyboardType="number-pad"
-          returnKeyType="done"
-          onChangeText={this.onChange}
-          onEndEditing={this.handleValueChange}
-        />
-      </View>
+      <TouchableOpacity onPress={this.focusInput} disabled={disabled}>
+        <View
+          style={[
+            styles.container,
+            {
+              backgroundColor: backgroundColorProp,
+              borderColor: borderColorProp
+            }
+          ]}
+          pointerEvents={pointerCondition}
+        >
+          {icon && this.placeIcon()}
+          <Text style={[styles.text, { color: FontColor }]}>{label}</Text>
+          <TextInput
+            ref={this.inputRef}
+            style={{
+              flex: 3,
+              textAlign: 'right',
+              paddingRight: 40,
+              height: 49,
+              borderBottomWidth: 1,
+              borderColor: '#d3d3d3',
+              fontSize: 20
+            }}
+            defaultValue={this.state.value}
+            value={this.state.value}
+            keyboardType="number-pad"
+            returnKeyType="done"
+            onChangeText={this.onChange}
+            onEndEditing={this.handleValueChange}
+          />
+        </View>
+      </TouchableOpacity>
     );
   }
 }

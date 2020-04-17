@@ -15,5 +15,17 @@ export default StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#fff'
+  },
+  imageContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 'auto',
+    width: '100%',
+    backgroundColor: 'transparent'
+  },
+  spacer: {
+    width: '100%',
+    height: 20,
+    backgroundColor: 'transparent'
   }
 });

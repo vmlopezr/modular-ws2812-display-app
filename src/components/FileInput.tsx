@@ -34,6 +34,14 @@ const styles = StyleSheet.create({
     borderRadius: 1,
     borderBottomWidth: 1,
     borderTopWidth: 1
+  },
+  textInput: {
+    textAlign: 'right',
+    paddingRight: 40,
+    height: 45,
+    borderWidth: 0.5,
+    borderColor: '#585858',
+    fontSize: 15
   }
 });
 class FileInput extends React.PureComponent<Props, State> {
@@ -58,18 +66,7 @@ class FileInput extends React.PureComponent<Props, State> {
   };
 
   focusInput = () => {
-    const backgroundColor = this.props.backgroundColor
-      ? this.props.backgroundColor
-      : '#fff';
-    this.setState({ backgroundColor: 'rgb(200, 196, 196)' });
-    setTimeout(
-      () => {
-        this.inputRef.current.focus();
-        this.setState({ backgroundColor: backgroundColor });
-      },
-
-      0
-    );
+    this.inputRef.current.focus();
   };
   placeIcon = () => {
     const color = this.props.iconColor ? this.props.iconColor : 'gray';
@@ -89,36 +86,26 @@ class FileInput extends React.PureComponent<Props, State> {
     }
   };
   render() {
-    const borderColor = this.props.borderColor
-      ? this.props.borderColor
-      : 'transparent';
-    const backgroundColor = this.props.backgroundColor
-      ? this.props.backgroundColor
-      : 'transparent';
+    const { borderColor, backgroundColor } = this.props;
+    const borderPropColor = borderColor ? borderColor : 'transparent';
+    const backPropColor = backgroundColor ? backgroundColor : 'transparent';
     return (
       <View
         style={[
           styles.container,
           {
-            backgroundColor: backgroundColor,
-            borderColor: borderColor
+            backgroundColor: backPropColor,
+            borderColor: borderPropColor
           }
         ]}
         onTouchStart={this.focusInput}
       >
         {this.props.icon && this.placeIcon()}
         <Text style={styles.text}>{this.props.label}</Text>
-        <View style={{ flex: 4, borderWidth: 1, borderColor: borderColor }}>
+        <View style={{ flex: 6, borderWidth: 1, borderColor: borderPropColor }}>
           <TextInput
             ref={this.inputRef}
-            style={{
-              textAlign: 'right',
-              paddingRight: 40,
-              height: 49,
-              borderBottomWidth: 1,
-              borderColor: '#d3d3d3',
-              fontSize: 15
-            }}
+            style={styles.textInput}
             onFocus={this.props.deSelect}
             value={this.state.value}
             returnKeyType="default"

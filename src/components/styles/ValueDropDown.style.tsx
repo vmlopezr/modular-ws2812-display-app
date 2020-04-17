@@ -3,8 +3,13 @@ import { StyleSheet, Dimensions } from 'react-native';
 const pickerItemHeight = 40;
 const screenWidth = Math.round(Dimensions.get('window').width);
 export default StyleSheet.create({
-  text: {
+  LabelText: {
     flex: 3,
+    fontSize: 15,
+    fontWeight: 'bold'
+  },
+  ValueText: {
+    flex: 7,
     fontSize: 15,
     fontWeight: 'bold'
   },

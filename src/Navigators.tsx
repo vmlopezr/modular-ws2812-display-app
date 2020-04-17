@@ -1,11 +1,9 @@
 /* eslint-disable react/display-name */
-import { createBottomTabNavigator } from 'react-navigation-tabs';
 import {
   createDrawerNavigator,
   DrawerContentComponentProps
 } from 'react-navigation-drawer';
 import React from 'react';
-import { Ionicons } from '@expo/vector-icons';
 import Home from './Screens/Home/HomeScreen';
 import Settings from './Screens/Settings/Settings';
 import LedGrid from './Screens/led-grid/LedGrid';
@@ -14,61 +12,21 @@ import { Dimensions } from 'react-native';
 import SideMenu from './Screens/SideMenu';
 import AnimationScreen from './Screens/Animations/AnimationScreen';
 import DefaultScreen from './Screens/Default/DefaultScreen';
-
-const defaultScreen = 'Home';
-export type tabBarIconType = {
-  focused: boolean;
-  tintColor: string;
-  horizontal?: boolean;
-};
-const DashboardTab = createBottomTabNavigator(
-  {
-    Draw: {
-      screen: LedGrid,
-      navigationOptions: () => ({
-        tabBarIcon: (options: tabBarIconType) => {
-          const iconName = `${options.focused ? 'ios-create' : 'md-create'}`;
-          return (
-            <Ionicons name={iconName} size={25} color={options.tintColor} />
-          );
-        }
-      })
-    },
-    Home: {
-      screen: Home,
-      navigationOptions: () => ({
-        tabBarIcon: (options: tabBarIconType) => {
-          const iconName = `${options.focused ? 'ios-home' : 'md-home'}`;
-          return (
-            <Ionicons name={iconName} size={25} color={options.tintColor} />
-          );
-        }
-      })
-    }
-  },
-  {
-    initialRouteName: defaultScreen,
-    tabBarOptions: {
-      activeTintColor: 'tomato',
-      inactiveTintColor: 'gray',
-      keyboardHidesTabBar: true
-    },
-    navigationOptions: {
-      headerShown: false
-    }
-  }
-);
+import MatrixTypeScreen from './Screens/MatrixType/MatrixType';
+const defaultScreen = 'Settings';
 
 const MainNavigator = createDrawerNavigator(
   {
     Settings: Settings,
-    Dashboard: DashboardTab,
+    MatrixType: MatrixTypeScreen,
+    Draw: LedGrid,
+    Home: Home,
     Animations: AnimationScreen,
     Default: DefaultScreen
   },
 
   {
-    initialRouteName: 'Dashboard',
+    initialRouteName: defaultScreen,
     contentComponent: (
       props: React.PropsWithChildren<DrawerContentComponentProps>
     ) => <SideMenu {...props} defaultScreen={defaultScreen} />,

@@ -37,13 +37,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#595959',
     fontSize: 13,
-    paddingLeft: 12
+    paddingLeft: 12,
+    position: 'absolute',
+    left: 0
   },
   selectedEffect: {
     fontWeight: 'bold',
     color: '#7f7f7f',
     fontSize: 13,
-    paddingRight: 12
+    paddingRight: 12,
+    position: 'absolute',
+    right: 0
   },
   title: {
     fontWeight: 'bold',
@@ -121,9 +125,14 @@ export default class FrameComponent extends React.PureComponent<Props, State> {
   };
   renderData = (label, data) => {
     return (
-      <View style={{ flexDirection: 'row' }}>
-        <Text style={[styles.label, { flex: 1 }]}>{label}</Text>
-        <Text style={[styles.selectedEffect, { flex: 1, textAlign: 'right' }]}>
+      <View
+        style={{
+          flexDirection: 'row',
+          width: screenWidth - 150
+        }}
+      >
+        <Text style={[styles.label]}>{label}</Text>
+        <Text style={[styles.selectedEffect, { textAlign: 'right' }]}>
           {data}
         </Text>
       </View>
@@ -169,14 +178,17 @@ export default class FrameComponent extends React.PureComponent<Props, State> {
             height={displayHeight}
             data={data.image}
           />
-          <View
-            style={{
-              width: screenWidth - 150,
-              height: 140
-            }}
-          >
-            <Text style={[styles.title, { flex: 1 }]}>{label}</Text>
-            <View style={{ flex: 2, justifyContent: 'space-evenly' }}>
+          <View style={{ height: 140, justifyContent: 'center' }}>
+            <View
+              style={{
+                justifyContent: 'space-evenly',
+                width: screenWidth - 150,
+                flex: 1
+              }}
+            >
+              <View>
+                <Text style={[styles.title]}>{label}</Text>
+              </View>
               {this.renderData('Effect:', data.Effect)}
               {this.renderData(displayTimeLabel, data.displayTime)}
               {this.renderData('Blink Speed(s):', data.BlinkTime)}

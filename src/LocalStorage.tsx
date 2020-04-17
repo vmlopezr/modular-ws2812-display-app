@@ -5,6 +5,7 @@ export default class LocalStorage {
   width: number;
   height: number;
   focusedScreen: string;
+  defaultFrameDisplayed: string[];
   MatrixType: string;
   constructor() {
     this.ESPConn = false;
@@ -12,6 +13,7 @@ export default class LocalStorage {
     this.height = 8;
     this.focusedScreen = 'Settings';
     this.MatrixType = 'CJMCU-64';
+    this.defaultFrameDisplayed = [];
   }
 
   static getInstance(): LocalStorage {
@@ -20,6 +22,12 @@ export default class LocalStorage {
     }
     return LocalStorage.instance;
   }
+  clearDefaultFrames = () => {
+    this.defaultFrameDisplayed.splice(0, this.defaultFrameDisplayed.length);
+  };
+  setDefaultFrames = (frames: string[]) => {
+    this.defaultFrameDisplayed = frames;
+  };
   setWidth(width: number) {
     this.width = width;
   }

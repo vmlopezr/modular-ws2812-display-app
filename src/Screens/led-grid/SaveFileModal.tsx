@@ -6,13 +6,15 @@ import {
   Text,
   ActivityIndicator,
   StatusBar,
-  Alert
+  Alert,
+  TouchableOpacity
 } from 'react-native';
-import { CustomButton } from './CustomButton';
-import { screenWidth, screenHeight } from '../Screens/GlobalStyles';
-import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
-import LocalStorage from '../LocalStorage';
-import FileInput from './FileInput';
+import { CustomButton } from '../../components/CustomButton';
+import { screenWidth, screenHeight } from '../GlobalStyles';
+import { ScrollView } from 'react-native-gesture-handler';
+import LocalStorage from '../../LocalStorage';
+import FileInput from '../../components/FileInput';
+
 export interface ESPFiles {
   file: string;
   width: number;
@@ -45,8 +47,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingBottom: 3
   },
-  modalFooter: {
+  titleContainer: { flex: 4, justifyContent: 'center', alignItems: 'center' },
+  titleLabel: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
+  spacer: {
+    width: '100%',
+    height: 20,
+    backgroundColor: 'transparent'
+  },
+  fileLabelContainer: {
+    flex: 1,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    paddingLeft: 8
+  },
+  fileSizeContainer: {
+    flex: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    paddingRight: 8
+  },
+  fileItemContainer: {
     height: 50,
+    width: screenWidth,
+    borderColor: '#c0c0c0',
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  fileItemSpacer: {
+    width: '100%',
+    height: 8,
+    backgroundColor: 'transparent'
+  },
+  modalSubHeader: {
+    height: 60,
     width: '100%',
     borderColor: '#525252',
     borderTopWidth: 1,
@@ -95,6 +130,9 @@ interface State {
   selected: number;
   loading: boolean;
 }
+/*
+  NOTE: This Modal can only be accessed with live connection to the ESP32.
+*/
 class SaveFileModal extends React.Component<Props, State> {
   prevFileName: string;
   fileName: string;
@@ -192,23 +230,21 @@ class SaveFileModal extends React.Component<Props, State> {
     if (this.state.selected === -1) {
       if (this.verifyFilename(this.fileName)) {
         this.setState({ loading: true });
+
+        // Set a timeout to allow loading icon to render
         setTimeout(() => {
           this.writeData();
         }, 10);
       }
     } else {
+      const file = this.props.fileList[this.state.selected].file;
       if (this.verifyFilename(this.fileName)) {
-        if (
-          this.getFileName() === this.props.fileList[this.state.selected].file
-        ) {
+        if (this.getFileName() === file) {
           Alert.alert(
             'Warning: File already exists',
             'Attempting to save replace the file. Are you sure?',
             [
-              {
-                text: 'Cancel',
-                style: 'cancel'
-              },
+              { text: 'Cancel', style: 'cancel' },
               {
                 text: 'OK',
                 onPress: () => {
@@ -258,6 +294,90 @@ class SaveFileModal extends React.Component<Props, State> {
   filenameInput = (file: string): void => {
     this.fileName = file;
   };
+  renderSubHeader = () => {
+    return (
+      <View style={styles.modalSubHeader}>
+        <View
+          style={{
+            flex: 5,
+            width: 50
+          }}
+        >
+          <FileInput
+            ref={this.inputRef}
+            defaultValue="Enter Filename"
+            label="Filename:"
+            updateValue={this.filenameInput}
+            icon="ios-document"
+            iconColor="grey"
+            iconSize={30}
+            deSelect={this.deSelectFile}
+          />
+        </View>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'flex-end',
+            paddingRight: 10
+          }}
+        >
+          <CustomButton
+            width={60}
+            backgroundColor="transparent"
+            label="Save"
+            fontColor="#147EFB"
+            onPress={this.getData}
+          />
+        </View>
+      </View>
+    );
+  };
+  renderHeader = () => {
+    return (
+      <View style={styles.modalHeader}>
+        <View style={{ flex: 1, width: 50 }}></View>
+        <View style={styles.titleContainer}>
+          <Text style={styles.titleLabel}>Save File</Text>
+        </View>
+        <View style={{ flex: 1, width: 60 }}>
+          <View style={{ flex: 1 }}></View>
+          <CustomButton
+            width={60}
+            height={20}
+            backgroundColor="transparent"
+            label="Exit"
+            fontColor="#fff"
+            fontSize={18}
+            onPress={this.props.closeSaveModal}
+          />
+        </View>
+      </View>
+    );
+  };
+  renderFileItem = (value: ESPFiles, index: number) => {
+    const backgroundColor = index === this.state.selected ? '#d3d3d3' : '#fff';
+    return (
+      <TouchableOpacity key={index} onPress={this.selectFile(index)}>
+        <View
+          style={[
+            styles.fileItemContainer,
+            { backgroundColor: backgroundColor }
+          ]}
+        >
+          <View style={styles.fileLabelContainer}>
+            <Text style={{ fontWeight: 'bold' }}>{value.file}</Text>
+          </View>
+          <View style={styles.fileSizeContainer}>
+            <Text style={{ fontWeight: 'bold' }}>
+              {' width: ' + value.width + ' height: ' + value.height}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.fileItemSpacer}></View>
+      </TouchableOpacity>
+    );
+  };
+
   render() {
     return (
       <Modal
@@ -267,138 +387,19 @@ class SaveFileModal extends React.Component<Props, State> {
       >
         <View style={styles.modal}>
           <StatusBar barStyle="light-content" />
-          <View style={styles.modalHeader}>
-            <View
-              style={{
-                flex: 1,
-                width: 50
-              }}
-            ></View>
-            <View
-              style={{
-                flex: 3,
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fff' }}>
-                Save File
-              </Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <View style={{ flex: 1 }}></View>
-              <CustomButton
-                width={60}
-                height={20}
-                backgroundColor="transparent"
-                label="Exit"
-                fontColor="#fff"
-                fontSize={18}
-                onPress={this.props.closeSaveModal}
-              />
-            </View>
-          </View>
-          <View style={styles.modalFooter}>
-            <View
-              style={{
-                flex: 4,
-                width: 50
-              }}
-            >
-              <FileInput
-                ref={this.inputRef}
-                defaultValue="Enter Filename"
-                label="Filename:"
-                updateValue={this.filenameInput}
-                icon="ios-document"
-                iconColor="grey"
-                iconSize={30}
-                deSelect={this.deSelectFile}
-                borderColor={'transparent'}
-              />
-            </View>
-            <View
-              style={{
-                flex: 1,
-                justifyContent: 'flex-end',
-                paddingRight: 10
-              }}
-            >
-              <CustomButton
-                width={60}
-                backgroundColor="transparent"
-                label="Save"
-                fontColor="#147EFB"
-                onPress={this.getData}
-              />
-            </View>
-          </View>
-          <View
-            style={{
-              width: '100%',
-              height: 20,
-              backgroundColor: 'transparent'
-            }}
-          ></View>
+          {this.renderHeader()}
+          {this.renderSubHeader()}
           <View style={styles.modalBody}>
+            <View style={styles.fileItemSpacer}></View>
             <ScrollView>
               <View>
                 {this.props.fileList.map((value, index) => {
-                  return (
-                    <View key={index}>
-                      <View
-                        style={{
-                          height: 50,
-                          width: screenWidth,
-                          backgroundColor:
-                            index === this.state.selected ? '#d3d3d3' : '#fff',
-                          borderColor: '#c0c0c0',
-                          borderBottomWidth: 1,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                        onTouchEnd={this.selectFile(index)}
-                      >
-                        <View
-                          style={{
-                            flex: 1,
-                            alignItems: 'flex-start',
-                            justifyContent: 'center',
-                            paddingLeft: 8
-                          }}
-                        >
-                          <Text style={{ fontWeight: 'bold' }}>
-                            {value.file}
-                          </Text>
-                        </View>
-                        <View
-                          style={{
-                            flex: 1,
-                            alignItems: 'flex-end',
-                            justifyContent: 'center',
-                            paddingRight: 8
-                          }}
-                        >
-                          <Text style={{ fontWeight: 'bold' }}>
-                            {' width: ' +
-                              value.width +
-                              ' height: ' +
-                              value.height}
-                          </Text>
-                        </View>
-                      </View>
-                      <View
-                        style={{
-                          width: '100%',
-                          height: 8,
-                          backgroundColor: 'transparent'
-                        }}
-                      ></View>
-                    </View>
-                  );
+                  return this.renderFileItem(value, index);
                 })}
               </View>
+              <View
+                style={{ height: 40, backgroundColor: 'transparent' }}
+              ></View>
             </ScrollView>
           </View>
         </View>
