@@ -144,6 +144,7 @@ export default class SettingsScreen extends React.PureComponent<Prop, State> {
     this.updatedValues = true;
     const newWidth = parseInt(data[2]);
     const newHeight = parseInt(data[1]);
+
     const defaultFramesDisplayed = data[4].split(',').map(filename => {
       return filename.slice(1, filename.length);
     });

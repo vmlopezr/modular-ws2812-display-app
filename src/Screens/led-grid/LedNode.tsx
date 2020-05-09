@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import LocalStorage from '../../LocalStorage';
 
@@ -48,11 +48,14 @@ class LedNode extends React.Component<Props, State> {
       return false;
     }
   }
+  // Handles touch event on the display grid by updating the color
   handleTouch(): void {
-    // console.log('row: ' + this.props.row + ' col: ' + this.props.col);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    // Color of the color picker
     const currentcolor = this.props.color();
     let newcolor = '';
+
+    // Update the color displayed for the node
     if (this.state.backgroundcolor === currentcolor.NodeColor) {
       this.setState({ backgroundcolor: '#000000' });
       newcolor = '#000000';
@@ -60,15 +63,21 @@ class LedNode extends React.Component<Props, State> {
       this.setState({ backgroundcolor: currentcolor.NodeColor });
       newcolor = currentcolor.LedColor;
     }
+
+    // Send the color to the NodeGrid array in the parent.
     this.props.onNodeUpdate(this.props.index, newcolor);
-    // return newcolor;
   }
+
+  // Update the color displayed on the Node
   updateColor(color: string) {
     this.setState({ backgroundcolor: color });
   }
+
+  // REset the color to black
   resetColor(): void {
     this.setState({ backgroundcolor: '#000000' });
   }
+
   render() {
     return (
       <View

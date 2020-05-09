@@ -143,6 +143,10 @@ class DefaultFileModal extends React.PureComponent<Props> {
       </View>
     );
   };
+  shouldDisableItem(filename: string): boolean {
+    if (this.storage.defaultFrameDisplayed.includes(filename)) return true;
+    return false;
+  }
   render() {
     const { showFileModal } = this.props;
     return (
@@ -161,6 +165,7 @@ class DefaultFileModal extends React.PureComponent<Props> {
                       fileDeSelected={this.fileDeSelected}
                       fileSelected={this.fileSelected}
                       fileModal={this.props.showFileModal}
+                      disabled={this.shouldDisableItem(value.file)}
                     />
                   );
                 })}

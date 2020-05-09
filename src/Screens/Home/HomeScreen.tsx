@@ -25,10 +25,6 @@ interface ImgData {
   width: number;
 }
 interface State {
-  // width: number;
-  // height: number;
-  // read: boolean;
-  // write: boolean;
   imageData: ImgData;
 }
 

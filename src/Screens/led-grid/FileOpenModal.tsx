@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { CustomButton } from '../../components/CustomButton';
 import { screenWidth, screenHeight } from '../GlobalStyles';
-// import { ScrollView } from 'react-native-gesture-handler';
 export interface ESPFiles {
   file: string;
   width: number;

@@ -60,7 +60,6 @@ class AnimationScreen extends React.PureComponent<Props, State> {
   };
   handleEffectchange = (effect: string) => {
     this.setState({ animationType: effect });
-    // this.displayEffect = effect;
   };
   animationMessage = () => {
     if (this.state.animationType === 'Single Pixel') {

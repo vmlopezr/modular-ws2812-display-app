@@ -63,6 +63,7 @@ interface Props {
   fileSelected(filename: string): void;
   fileDeSelected(filename: string): void;
   checkFiles(): boolean;
+  defaultFileList: string[];
 }
 
 class DefaultFileModal extends React.PureComponent<Props> {
@@ -109,8 +110,14 @@ class DefaultFileModal extends React.PureComponent<Props> {
       </View>
     );
   }
+  shouldDisableItem(filename: string): boolean {
+    if (this.props.defaultFileList.includes(filename)) return true;
+    return false;
+  }
   render() {
     const { width, height, showFileModal } = this.props;
+    // console.log('file modal');
+    // console.log(this.props.defaultFileList);
     return (
       <Modal transparent={true} visible={showFileModal} animationType="none">
         <View collapsable={false} style={styles.modal}>
@@ -128,6 +135,7 @@ class DefaultFileModal extends React.PureComponent<Props> {
                         fileDeSelected={this.props.fileDeSelected}
                         fileSelected={this.props.fileSelected}
                         fileModal={showFileModal}
+                        disabled={this.shouldDisableItem(value.file)}
                       />
                     );
                   }

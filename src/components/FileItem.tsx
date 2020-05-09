@@ -7,6 +7,7 @@ interface Props {
   fileSelected(filename: string): void;
   fileDeSelected(filename: string): void;
   fileModal?: boolean;
+  disabled?: boolean;
 }
 interface State {
   Selected: boolean;
@@ -62,19 +63,21 @@ class FileItem extends React.PureComponent<Props, State> {
     }
   };
   render() {
-    const { data } = this.props;
+    const { data, disabled } = this.props;
+    const isDisabled = disabled ? disabled : false;
     const backgroundColor = this.state.Selected ? '#d3d3d3' : '#fff';
+    const color = isDisabled ? '#cc8a8a' : backgroundColor;
+    const defaultText = isDisabled ? ': Default list' : '';
     return (
-      <TouchableOpacity onPress={this.selectFile}>
+      <TouchableOpacity onPress={this.selectFile} disabled={isDisabled}>
         <View style={styles.spacer}></View>
         <View
-          style={[
-            styles.label,
-            { width: screenWidth, backgroundColor: backgroundColor }
-          ]}
+          style={[styles.label, { width: screenWidth, backgroundColor: color }]}
         >
           <View collapsable={false} style={styles.fileLabelContainer}>
-            <Text style={{ fontWeight: 'bold' }}>{data.file}</Text>
+            <Text style={{ fontWeight: 'bold' }}>
+              {data.file + defaultText}
+            </Text>
           </View>
           <View collapsable={false} style={styles.fileSizeContainer}>
             <Text style={{ fontWeight: 'bold' }}>

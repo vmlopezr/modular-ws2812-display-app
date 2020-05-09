@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "SeniorDesignManaged",
-    "slug": "SeniorDesignManaged",
-    "privacy": "public",
+    "name": "WS2812DisplayESP32",
+    "slug": "WS2812DisplayESP32",
+    "privacy": "unlisted",
     "sdkVersion": "36.0.0",
     "platforms": [
       "ios",
@@ -27,8 +27,9 @@
       "package": "senior.design.modbuild",
       "versionCode": 1,
       "permissions": [],
-      "icon":"./assets/AppLogo.png"
-    }
-
+      "icon": "./assets/AppLogo.png"
+    },
+    "description": "A Project that aims to add control via phone application to a LED display\ncomposed of WS2812b LEDs. The phone application communicates to the ESP32 via an\nAccess Point and updates the display real time as well as allows for sequences\nto be set by default.",
+    "githubUrl": "https://github.com/vmlopezr/modular-ws2812-display-app"
   }
 }

@@ -31,13 +31,11 @@ export default class GridComponent extends React.Component<Props> {
   _scrollRefInner: any;
   _scroll: boolean;
   longPressTimeout: NodeJS.Timeout;
-  shortDelay: number;
+  // shortDelay: number;
   shortPressTimeout: NodeJS.Timeout;
   _move: boolean;
   _touch: boolean;
-  firstTouchX: number;
-  firstTouchY: number;
-  firstPosition: string;
+  firstTouch: string;
   prevPosition: string;
   prevWidth: number;
   prevHeight: number;
@@ -56,8 +54,8 @@ export default class GridComponent extends React.Component<Props> {
     this.changedGridSize = false;
     this._move = false;
     this._touch = false;
-    this.firstPosition = '';
-    this.shortDelay = 60;
+    this.firstTouch = '';
+    // this.shortDelay = 60;
     this.prevPosition = '';
     this.prevWidth = this.storage.width;
     this.prevHeight = this.storage.height;
@@ -76,88 +74,76 @@ export default class GridComponent extends React.Component<Props> {
     this._panResponder = PanResponder.create({
       onMoveShouldSetPanResponder: () => true,
 
+      // Allow dragging on the grid, after long press
       onPanResponderMove: (event, state) => {
-        if (
-          !(
-            (this.props.height == 8 &&
-              (event.nativeEvent.pageY <= 157 ||
-                event.nativeEvent.pageY >= 400)) ||
-            (this.props.width == 8 &&
-              (event.nativeEvent.pageX <= 107 ||
-                event.nativeEvent.pageX >= 303))
-          )
-        ) {
-          if (event.nativeEvent.pageY > 75 && event.nativeEvent.pageY < 480) {
-            if (this._move) {
-              clearTimeout(this.shortPressTimeout);
-              clearTimeout(this.longPressTimeout);
-              let xVal = Math.floor(event.nativeEvent.locationX / 25);
-              let yVal =
-                this.props.height -
-                1 -
-                Math.floor(event.nativeEvent.locationY / 25);
+        const { height, width } = this.props;
+        const { pageY, locationX, locationY } = event.nativeEvent;
 
-              if (xVal >= this.props.width) {
-                xVal = this.props.width - 1;
-              } else if (xVal < 0) {
-                xVal = 0;
-              }
-              if (yVal >= this.props.height) {
-                yVal = this.props.height - 1;
-              } else if (yVal < 0) {
-                yVal = 0;
-              }
-              const newposition = xVal.toString() + ',' + yVal.toString();
+        // Allow the event to execute when the move/drag is in the grid area.
+        if (pageY > 75 && pageY < 480) {
+          if (this._move) {
+            clearTimeout(this.shortPressTimeout);
+            clearTimeout(this.longPressTimeout);
 
-              if (this.prevPosition !== newposition) {
-                if (newposition !== this.firstPosition) {
-                  const index = yVal + this.props.height * xVal;
-                  this.liveIndex = this.getDisplayIndex(xVal, yVal);
-                  this.NodeRef[index].current.handleTouch();
-                }
-              }
-              this.prevPosition = newposition;
+            // Calculate index of node. Each node is 25 px by 25 px
+            let xVal = Math.floor(locationX / 25);
+            let yVal = height - 1 - Math.floor(locationY / 25);
+
+            // Check for boundaries of the grid
+            if (xVal >= width) xVal = width - 1;
+            else if (xVal < 0) xVal = 0;
+
+            if (yVal >= height) yVal = height - 1;
+            else if (yVal < 0) yVal = 0;
+
+            // save current position
+            const newposition = xVal.toString() + ',' + yVal.toString();
+
+            if (this.prevPosition == newposition) return;
+
+            if (newposition !== this.firstTouch) {
+              const index = yVal + height * xVal;
+              this.liveIndex = this.getDisplayIndex(xVal, yVal);
+              this.NodeRef[index].current.handleTouch();
             }
+
+            this.prevPosition = newposition;
           }
         }
       },
       onStartShouldSetPanResponder: () => true,
 
       onPanResponderStart: event => {
-        if (event.nativeEvent.touches.length === 1) {
-          this.firstTouchY =
-            this.props.height -
-            1 -
-            Math.floor(event.nativeEvent.locationY / 25);
-          this.firstTouchX = Math.floor(event.nativeEvent.locationX / 25);
-          const index = this.firstTouchY + this.props.height * this.firstTouchX;
-          if (this.firstTouchX >= this.props.width) {
-            this.firstTouchX = this.props.width - 1;
-          } else if (this.firstTouchX < 0) {
-            this.firstTouchX = 0;
-          }
-          if (this.firstTouchY >= this.props.height) {
-            this.firstTouchY = this.props.height - 1;
-          } else if (this.firstTouchY < 0) {
-            this.firstTouchY = 0;
-          }
+        const { locationY, locationX, touches } = event.nativeEvent;
+        if (touches.length === 1) {
+          const { height, width } = this.props;
 
-          this.firstPosition =
-            this.firstTouchX.toString() + ',' + this.firstTouchY.toString();
+          // Convert touch coordinates to index of node.
+          let yPos = height - 1 - Math.floor(locationY / 25);
+          let xPos = Math.floor(locationX / 25);
+          const index = yPos + height * xPos;
 
-          this.shortPressTimeout = setTimeout(() => {
-            this.liveIndex = this.getDisplayIndex(
-              this.firstTouchX,
-              this.firstTouchY
-            );
-            this.NodeRef[index].current.handleTouch();
+          // Check for boundaries of the grid
+          if (xPos >= width) xPos = width - 1;
+          else if (xPos < 0) xPos = 0;
 
-            this.longPressTimeout = setTimeout(() => {
-              this._move = true;
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-              this.setScrolls(false);
-            }, 300);
-          }, this.shortDelay);
+          if (yPos >= height) yPos = height - 1;
+          else if (yPos < 0) yPos = 0;
+
+          // load first touch coordinates for comparison with possible move coordinates later on
+          this.firstTouch = xPos.toString() + ',' + yPos.toString();
+
+          // this.shortPressTimeout = setTimeout(() => {
+          this.liveIndex = this.getDisplayIndex(xPos, yPos);
+          this.NodeRef[index].current.handleTouch();
+
+          // On long press timeout allow dragging. This is controlled by onPanResponderMove
+          this.longPressTimeout = setTimeout(() => {
+            this._move = true;
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            this.setScrolls(false);
+          }, 300);
+          // }, this.shortDelay);
         }
       },
       onPanResponderTerminationRequest: () => true,
@@ -176,6 +162,27 @@ export default class GridComponent extends React.Component<Props> {
       }
     });
   }
+  shouldComponentUpdate(nextProps) {
+    if (
+      nextProps.width !== this.props.width ||
+      nextProps.height !== this.props.height
+    ) {
+      this.changedGridSize = true;
+      setTimeout(() => {
+        this.startUpdateProcess();
+      }, 30);
+      return true;
+    } else if (this.changedGridSize) {
+      this.changedGridSize = false;
+      return true;
+    } else if (this.finishedReading) {
+      this.finishedReading = false;
+      return true;
+    }
+
+    return false;
+  }
+  // Send live data to the ESP32
   liveInput = (color: string) => {
     if (this.storage.ESPConn) {
       const data = 'INPT' + this.liveIndex + ' ' + color.slice(1, 7);
@@ -183,11 +190,10 @@ export default class GridComponent extends React.Component<Props> {
     }
   };
   getDisplayIndex = (x, y) => {
-    // const isCJMCU = this.storage.MatrixType === 'CJMCU-64' ? true : false;
-    const mtype = this.storage.MatrixType;
-    const width = this.storage.width;
-    const height = this.storage.height;
-    if (mtype === 'WS-2812-8x8') {
+    const { MatrixType, width, height } = this.storage;
+    // Calculate the index in the contiguous array based on the data signal
+    // path of the matrix type used. See the settings screen for more help.
+    if (MatrixType === 'WS-2812-8x8') {
       if (x % 2 === 1) {
         return (
           8 * (x % 8) +
@@ -203,16 +209,16 @@ export default class GridComponent extends React.Component<Props> {
           width * 8 * Math.floor(y / 8)
         );
       }
-    } else if (mtype === 'CJMCU-64') {
+    } else if (MatrixType === 'CJMCU-64') {
       return (
         8 * (x % 8) +
         (y % 8) +
         64 * Math.floor(x / 8) +
         width * 8 * Math.floor(y / 8)
       );
-    } else if (mtype === 'CUSTOM-CJMCU') {
+    } else if (MatrixType === 'CUSTOM-CJMCU') {
       return y + height * x;
-    } else if (mtype === 'CUSTOM-WS-2812') {
+    } else if (MatrixType === 'CUSTOM-WS-2812') {
       if (x % 2 === 1) {
         return height - 1 - y + height * x;
       } else {
@@ -220,24 +226,22 @@ export default class GridComponent extends React.Component<Props> {
       }
     }
   };
+
+  // Disable or enable the scrolling for the grid
   setScrolls(scroll: boolean) {
     this._scrollRefInner.current.setNativeProps({ scrollEnabled: scroll });
     this._scrollRefOuter.current.setNativeProps({ scrollEnabled: scroll });
   }
 
+  // Write the color of the touched node to the array.
   onNodeUpdate = (index: number, color: string) => {
     this.NodeGrid[index] = color;
     this.liveInput(color);
   };
-  onLongPress(value: boolean): void {
-    this.scrolling = value;
-  }
-  onPressOut(value: boolean): void {
-    this.scrolling = value;
-  }
 
   sendColor = () => {
-    return { NodeColor: this.props.NodeColor, LedColor: this.props.LedColor };
+    const { NodeColor, LedColor } = this.props;
+    return { NodeColor: NodeColor, LedColor: LedColor };
   };
 
   updateGridLength(height, width) {
@@ -271,6 +275,8 @@ export default class GridComponent extends React.Component<Props> {
     }
     return grid;
   }
+
+  // Reset the grid color to black
   clearScreen = () => {
     this.NodeRef.map((node: React.RefObject<LedNode>) => {
       node.current.resetColor();
@@ -278,26 +284,7 @@ export default class GridComponent extends React.Component<Props> {
     this.NodeGrid.fill('#000000', 0, this.NodeGrid.length);
     if (this.storage.ESPConn) this.storage.socketInstance.send('CLRI');
   };
-  shouldComponentUpdate(nextProps) {
-    if (
-      nextProps.width !== this.props.width ||
-      nextProps.height !== this.props.height
-    ) {
-      this.changedGridSize = true;
-      setTimeout(() => {
-        this.startUpdateProcess();
-      }, 30);
-      return true;
-    } else if (this.changedGridSize) {
-      this.changedGridSize = false;
-      return true;
-    } else if (this.finishedReading) {
-      this.finishedReading = false;
-      return true;
-    }
 
-    return false;
-  }
   convertValue(value: string): string {
     const number = parseInt(value, 16);
 
@@ -501,6 +488,8 @@ export default class GridComponent extends React.Component<Props> {
 
     return data;
   }
+
+  // Update the grid size
   async UpdatePage() {
     if (
       this.prevHeight !== this.props.height ||
@@ -511,6 +500,8 @@ export default class GridComponent extends React.Component<Props> {
       this.prevWidth = this.props.width;
     }
   }
+
+  // disable the loading animation after completion
   async startUpdateProcess() {
     await this.UpdatePage();
 

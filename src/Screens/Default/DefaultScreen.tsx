@@ -56,6 +56,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
   onEnterRead: boolean;
   frameData: string;
   loadingTimeout: any;
+  loadingFileModal: any;
   constructor(props) {
     super(props);
     this.storage = LocalStorage.getInstance();
@@ -94,6 +95,8 @@ class DefaultScreen extends React.PureComponent<Props, State> {
   keyboardHide = () => {
     this.updateModalPosition(screenHeight * 0.4);
   };
+
+  // Hide the keyboard
   componentWillUnmount() {
     if (Platform.OS === 'android') {
       Keyboard.removeAllListeners('keyboardDidHide');
@@ -106,17 +109,22 @@ class DefaultScreen extends React.PureComponent<Props, State> {
   updateModalPosition = (styleTop: number) => {
     this.setState({ keyboardSpace: styleTop });
   };
+
+  // Update the state on the ESP32
   onEnter = () => {
     this.storage.focusedScreen = 'Default';
     this.storage.socketInstance.send('EDEF');
     this.retrieveDefaultData();
   };
+  // Clear data
   onExit = () => {
     this.storage.setDefaultFrames(this.state.list);
     this.effectData.splice(0, this.effectData.length);
+
     this.setState({ list: [] });
   };
   addItem = (filename: string, image: string) => {
+    // Scroll screen to the end
     this._scrollRef.current.flatlistRef.current.getNode().scrollToEnd();
     setTimeout(() => {
       this.effectData.push({
@@ -130,6 +138,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
       });
       const array = this.state.list;
       array.push(filename);
+
       this.setState({ list: [...array], loading: false });
       setTimeout(() => {
         this._scrollRef.current.flatlistRef.current.getNode().scrollToEnd();
@@ -137,13 +146,14 @@ class DefaultScreen extends React.PureComponent<Props, State> {
     }, 100);
   };
   saveFrameImage = (filename: string, image: string) => {
-    this._scrollRef.current.flatlistRef.current.getNode().scrollToEnd();
     setTimeout(() => {
+      this._scrollRef.current.flatlistRef.current.getNode().scrollToEnd();
       const index = this.findItemIndex(this.effectData, filename);
       if (index !== -1) {
         this.effectData[index].image = image;
         const array = this.state.list;
         array.push(filename);
+
         this.setState({ list: [...array], loading: false });
       } else {
         this.setState({ loading: false });
@@ -166,6 +176,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
   };
   onCancel = () => {
     this.selectedItems.splice(0, this.selectedItems.length);
+
     this.setState({ selectButton: false });
   };
   findItemIndex = (list: FrameEffects[], value: string) => {
@@ -277,6 +288,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
             text: 'OK',
             onPress: () => {
               this.effectData.splice(0, this.effectData.length);
+
               this.setState({ loading: false, list: [] });
               clearTimeout(this.loadingTimeout);
             }
@@ -311,11 +323,13 @@ class DefaultScreen extends React.PureComponent<Props, State> {
         this.onEnterRead = true;
         this.onEnterProcess('/' + filename);
       });
+
       this.setState({ loading: false });
       clearTimeout(this.loadingTimeout);
     } else {
       // Reset the arrays
       this.effectData.splice(0, this.effectData.length);
+
       this.setState({ loading: false, list: [] });
       this.storage.clearDefaultFrames();
       clearTimeout(this.loadingTimeout);
@@ -390,7 +404,12 @@ class DefaultScreen extends React.PureComponent<Props, State> {
   };
   requestFileNames = () => {
     this.setState({ loading: true });
-
+    this.loadingFileModal = setTimeout(() => {
+      this.setState({ loading: false });
+      alert(
+        'An error happened while retrieving files. Check ESP32 connection.'
+      );
+    }, 15000);
     this.storage.socketInstance.addEventListener(
       'message',
       this.obtainFileNames
@@ -404,11 +423,17 @@ class DefaultScreen extends React.PureComponent<Props, State> {
       'message',
       this.obtainFileNames
     );
+
     this.setState({
       loading: false,
       showFileModal: true,
       ESPFileList: this.processFileNames(data.replace(/\//g, ''))
     });
+    clearTimeout(this.loadingFileModal);
+  };
+
+  clearFileModalTimeout = () => {
+    this.setState({ showFileModal: false });
   };
   displayFile = () => {
     if (this.fileName.length) {
@@ -558,6 +583,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
   render() {
     const displayWidth = this.storage.width;
     const displayHeight = this.storage.height;
+
     return (
       <SafeAreaView style={GlobalStyles.droidSafeArea}>
         <NavigationEvents onWillFocus={this.onEnter} onWillBlur={this.onExit} />
@@ -595,6 +621,7 @@ class DefaultScreen extends React.PureComponent<Props, State> {
           fileSelected={this.fileSelected}
           fileDeSelected={this.fileDeSelected}
           checkFiles={this.checkFiles}
+          defaultFileList={this.state.list}
         />
       </SafeAreaView>
     );

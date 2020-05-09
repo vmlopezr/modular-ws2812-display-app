@@ -15,6 +15,8 @@ interface CommsActions {
 export const CommsContext = createContext<CommsCtx>(null);
 export const CommsConsumer = CommsContext.Consumer;
 
+//The context monitors the connection with the ESP32. Automatically updates
+//The connection badge on the upper right header on connect/disconnect events.
 class CommsContextProvider extends React.PureComponent<{}, CommsState> {
   storage: LocalStorage;
   state = {
@@ -27,30 +29,29 @@ class CommsContextProvider extends React.PureComponent<{}, CommsState> {
   subscribeSocketConnection = () => {
     if (!this.state.ESPConn) {
       this.storage.connectToServer();
-      this.storage.socketInstance.addEventListener('close', () => {
-        this.storage.ESPConn = false;
-        this.setState({ ESPConn: false });
-        alert('Connection with the ESP32 is closed.');
-      });
-      this.storage.socketInstance.addEventListener('open', () => {
-        this.storage.ESPConn = true;
-        this.setState({ ESPConn: true });
-
-        if (this.storage.ESPConn) {
-          // Set ESP32 State Maching to Live Input State
-          if (this.storage.focusedScreen === 'LedGrid') {
-            this.storage.socketInstance.send('LIVE');
-          } else if (this.storage.focusedScreen === 'Settings') {
-            this.storage.socketInstance.send('SETT');
-          }
-        }
-      });
+      this.storage.socketInstance.addEventListener('close', this.onDisconnect);
+      this.storage.socketInstance.addEventListener('open', this.onConnect);
       this.storage.socketInstance.addEventListener('error', () => {
         alert(
           'Warning: Could not connect to the ESP32, or the connection was lost.\nVerify that it is powered correctly and try again.'
         );
       });
     }
+  };
+  onDisconnect = () => {
+    this.storage.ESPConn = false;
+    this.setState({ ESPConn: false });
+    alert('Connection with the ESP32 is closed.');
+  };
+  onConnect = () => {
+    const { focusedScreen, socketInstance } = this.storage;
+    this.storage.ESPConn = true;
+    this.setState({ ESPConn: true });
+
+    if (!this.storage.ESPConn) return;
+    // Set ESP32 State to the active screen
+    if (focusedScreen === 'LedGrid') socketInstance.send('LIVE');
+    else if (focusedScreen === 'Settings') socketInstance.send('SETT');
   };
   render() {
     return (

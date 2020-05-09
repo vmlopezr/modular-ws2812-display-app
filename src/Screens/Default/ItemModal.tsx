@@ -232,7 +232,7 @@ class ItemModal extends PureComponent<Props, State> {
           leftPadding={17}
           rightPadding={4}
           borderColor="#8f8f8f"
-          minValue={60}
+          minValue={1}
           disabled={this.state.slideComponentDisabled}
         />
         <View
